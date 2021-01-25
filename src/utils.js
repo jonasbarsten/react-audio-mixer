@@ -1,13 +1,6 @@
 // App.module("util", function (util, App, Backbone, Marionette, $, _) {
 //   "use strict";
 
-//   // convert a value from one scale to another
-//   // e.g. App.util.scale(-96, -192, 0, 0, 100) to convert
-//   // -96 from dB (-192 - 0) to percentage (0 - 100)
-//   util.scale = function (val, f0, f1, t0, t1) {
-//     return ((val - f0) * (t1 - t0)) / (f1 - f0) + t0;
-//   };
-
 //   // convert dBFS to a percentage
 //   util.dBToPercent = function (dB) {
 //     return util.scale(dB, -192, 0, 0, 100);
@@ -130,4 +123,11 @@ export function formatTime(seconds) {
   str += s + ":";
   str += ms.toString().slice(0, 2);
   return str;
+}
+
+// convert a value from one scale to another
+// e.g. App.util.scale(-96, -192, 0, 0, 100) to convert
+// -96 from dB (-192 - 0) to percentage (0 - 100)
+export function scale(val, f0, f1, t0, t1) {
+  return ((val - f0) * (t1 - t0)) / (f1 - f0) + t0;
 }

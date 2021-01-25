@@ -1,11 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import { formatTime } from "../utils";
 
-import "../fonts/digital-7.eot";
-import "../fonts/digital-7.svg";
-import "../fonts/digital-7.ttf";
-import "../fonts/digital-7.woff";
-
 const Clock = (props) => {
   const canvasRef = useRef(null);
 
