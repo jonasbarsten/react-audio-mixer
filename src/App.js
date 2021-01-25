@@ -11,9 +11,10 @@ import "./stylesheets/fonts.css";
 import "./stylesheets/loader.css";
 import "./stylesheets/main.css";
 
-import Track from "./components/Track";
+import Channel from "./components/Channel";
 import Controls from "./components/Controls";
 import AudioAnalyser from "./components/AudioAnalyser";
+import Track from "./components/Track";
 
 function App() {
   const [audio, setAudio] = useState(null);
@@ -71,18 +72,18 @@ function App() {
         <span>Loading Audio Assets...</span>
       </div> */}
       <div id="mixer">
-        <Track id={1} />
-        <Track id={2} />
-        <Track id={3} />
-        <Track id={4} />
-        <Track id={5} />
-        <Track id={6} />
-        <Track id={7} />
-        <Track id={8} />
-        <Track id={9} />
-        <Track id={10} />
-        <Track id={11} />
-        <Track id={12} />
+        <Channel id={1} />
+        <Channel id={2} />
+        <Channel id={3} />
+        <Channel id={4} />
+        <Channel id={5} />
+        <Channel id={6} />
+        <Channel id={7} />
+        <Channel id={8} />
+        <Channel id={9} />
+        <Channel id={10} />
+        <Channel id={11} />
+        <Channel id={12} />
         <div id="meters">
           <div className="vu">
             <div className="mask">
@@ -104,9 +105,10 @@ function App() {
           </div>
         </div>
         <div id="master">
-          <div className="track">
+          <Track master={true} />
+          {/* <div className="track">
             <div className="fader" style={{ top: "209px" }}></div>
-          </div>
+          </div> */}
           <p className="label">Master</p>
         </div>
       </div>
