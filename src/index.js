@@ -4,13 +4,9 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 
-import AudioContextProvider from "./context/Audio";
-
 ReactDOM.render(
   <React.StrictMode>
-    <AudioContextProvider>
-      <App />
-    </AudioContextProvider>
+    <App />
   </React.StrictMode>,
   document.getElementById("root")
 );

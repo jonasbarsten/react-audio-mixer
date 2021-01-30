@@ -110,6 +110,22 @@
 
 // });
 
+export function dBFSCalc(buffer) {
+  var len = buffer.length,
+    total = 0,
+    i = 0,
+    rms,
+    db;
+
+  while (i < len) {
+    total += buffer[i] * buffer[i++];
+  }
+
+  rms = Math.sqrt(total / len);
+  db = 20 * (Math.log(rms) / Math.LN10);
+  return Math.max(-192, db);
+}
+
 // format seconds as 00:00:00
 export function formatTime(seconds) {
   var ms = Math.floor((seconds * 1000) % 1000),

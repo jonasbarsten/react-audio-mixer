@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import Panner from "./Panner";
 import Track from "./Track";
 
-const Channel = () => {
-  const [name, setName] = useState("Track");
+const Channel = (props) => {
+  const track = props.track;
   const [mute, setMute] = useState(false);
   const [solo, setSolo] = useState(false);
   const [reverb, setReverb] = useState(false);
@@ -32,8 +32,8 @@ const Channel = () => {
           PFL
         </button>
         <Panner />
-        <Track dBFS={dBFS} />
-        <p className="label">{name}</p>
+        <Track dBFS={dBFS} gainNode={track.gainNode} />
+        <p className="label">{props.track.name}</p>
       </div>
     </div>
   );
