@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import config from "./config.json";
 
 import "./fonts/digital-7.eot";
 import "./fonts/digital-7.svg";
@@ -16,9 +17,54 @@ import Controls from "./components/Controls";
 import AudioAnalyser from "./components/AudioAnalyser";
 import Loader from "./components/Loader";
 
-function App() {
+import { AudioContext } from "./context/Audio";
+
+const App = () => {
   const [audio, setAudio] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  // const [audioCtx, setAudioCtx] = useState(null);
+  // const [audioElements, setAudioElements] = useState(null);
+  const audioContext = useContext(AudioContext);
+
+  useEffect(() => {
+    audioContext.init();
+
+    // const onLoad = async () => {
+    //   if (audioCtx) {
+    //     return;
+    //   }
+    //   const AudioContext = window.AudioContext || window.webkitAudioContext;
+    //   const newAudioCtx = new AudioContext();
+
+    //   const audioContainer = document.getElementById("audio-container");
+
+    //   console.log(audioContainer);
+
+    //   let newAudioElements = [];
+
+    //   config.tracks.map((track) => {
+    //     // Creating audio element with audio source
+    //     const src = config.audioRoot + track.fileName;
+    //     const audioElement = document.createElement("AUDIO");
+    //     audioContainer.appendChild(audioElement);
+    //     newAudioElements.push(audioElement);
+    //     audioElement.src = src;
+    //     // Adding the audio element to the audio context
+    //     const audioNode = newAudioCtx.createMediaElementSource(audioElement);
+    //     // Connecting the track in the audio context to the audio context destination
+    //     audioNode.connect(newAudioCtx.destination);
+    //   });
+
+    //   setAudioCtx(newAudioCtx);
+    //   setAudioElements(newAudioElements);
+
+    //   setIsLoading(false);
+    // };
+
+    // onLoad();
+  }, []);
+
+  ///// Microphone stuff /////
 
   const getMicrophone = async () => {
     const audio = await navigator.mediaDevices.getUserMedia({
@@ -41,7 +87,10 @@ function App() {
     }
   };
 
-  console.log(audio);
+  // console.log(audio);
+  // console.log(audioElements);
+
+  ///// Microphone stuff /////
 
   return (
     <div className="App">
@@ -76,8 +125,9 @@ function App() {
           <Controls />
         </>
       )}
+      <div id="audio-container"></div>
     </div>
   );
-}
+};
 
 export default App;

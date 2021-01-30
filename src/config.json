@@ -1,0 +1,41 @@
+{
+  "tracks": [
+    {
+      "fileName": "1901_bass.mp3",
+      "name": "Bass"
+    },
+    {
+      "fileName": "1901_keys.mp3",
+      "name": "Keys"
+    },
+    {
+      "fileName": "1901_triggers.mp3",
+      "name": "Triggers"
+    },
+    {
+      "fileName": "1901_gtr1.mp3",
+      "name": "GTR 1"
+    },
+    {
+      "fileName": "1901_gtr2.mp3",
+      "name": "GTR 2"
+    },
+    {
+      "fileName": "1901_leadvox.mp3",
+      "name": "Lead Vox"
+    },
+    {
+      "fileName": "1901_synth1.mp3",
+      "name": "Synth 1"
+    },
+    {
+      "fileName": "1901_synth2.mp3",
+      "name": "Synth 2"
+    },
+    {
+      "fileName": "1901_voxfx.mp3",
+      "name": "Vox fx"
+    }
+  ],
+  "audioRoot": "sounds/"
+}
