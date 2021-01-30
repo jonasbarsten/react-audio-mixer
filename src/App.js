@@ -11,13 +11,14 @@ import "./stylesheets/fonts.css";
 import "./stylesheets/loader.css";
 import "./stylesheets/main.css";
 
-import Channel from "./components/Channel";
+import Mixer from "./components/Mixer";
 import Controls from "./components/Controls";
 import AudioAnalyser from "./components/AudioAnalyser";
-import Track from "./components/Track";
+import Loader from "./components/Loader";
 
 function App() {
   const [audio, setAudio] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const getMicrophone = async () => {
     const audio = await navigator.mediaDevices.getUserMedia({
@@ -25,7 +26,6 @@ function App() {
       video: false,
     });
     setAudio(audio);
-    // this.setState({ audio });
   };
 
   const stopMicrophone = () => {
@@ -67,52 +67,15 @@ function App() {
       <header>
         <h1>Stokkmaur</h1>
       </header>
-      {/* <div id="loader">
-        <div className="loader-bar"></div>
-        <span>Loading Audio Assets...</span>
-      </div> */}
-      <div id="mixer">
-        <Channel id={1} />
-        <Channel id={2} />
-        <Channel id={3} />
-        <Channel id={4} />
-        <Channel id={5} />
-        <Channel id={6} />
-        <Channel id={7} />
-        <Channel id={8} />
-        <Channel id={9} />
-        <Channel id={10} />
-        <Channel id={11} />
-        <Channel id={12} />
-        <div id="meters">
-          <div className="vu">
-            <div className="mask">
-              <div
-                className="needle left"
-                style={{ WebkitTransform: "rotateZ(0deg)" }}
-              ></div>
-            </div>
-            <p className="vu-label">L</p>
-          </div>
-          <div className="vu">
-            <div className="mask">
-              <div
-                className="needle right"
-                style={{ WebkitTransform: "rotateZ(0deg)" }}
-              ></div>
-            </div>
-            <p className="vu-label">R</p>
-          </div>
-        </div>
-        <div id="master">
-          <Track master={true} />
-          {/* <div className="track">
-            <div className="fader" style={{ top: "209px" }}></div>
-          </div> */}
-          <p className="label">Master</p>
-        </div>
-      </div>
-      <Controls />
+
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <>
+          <Mixer />
+          <Controls />
+        </>
+      )}
     </div>
   );
 }
