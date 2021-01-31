@@ -144,7 +144,7 @@ const AudioContextProvider = ({ children }) => {
       });
     } else {
       tracks.forEach((track) => {
-        // Keep muted tracks muted afer unsolo
+        // Keep muted tracks muted after un-solo
         if (mutedTracks.indexOf(track.id) !== -1) {
           return;
         } else {
@@ -181,7 +181,7 @@ const AudioContextProvider = ({ children }) => {
         playing: () => playing,
         getTracks: () => tracks,
         getMasterTrack: () => masterTrack,
-        setMasterGain: (gain) => setMasterGain(gain),
+        setMasterGain,
         getAudioContext: () => audioCtx,
         toggleSolo,
         toggleMute,

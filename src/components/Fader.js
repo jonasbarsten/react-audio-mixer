@@ -6,14 +6,15 @@ import { AudioContext } from "../context/Audio";
 import { scale } from "../utils";
 
 const Fader = (props) => {
-  // const [gain, setGain] = useState(1);
   const [position, setPosition] = useState(-171);
   const audioContext = useContext(AudioContext);
+
+  // TODO: do this in audio context to have more control
+  // Could save fader state etc if needed
 
   const handleDrag = (e, data, max) => {
     setPosition(data.y);
     const scaled = data.y + 200;
-    // setGain(Math.pow(scale(scaled, 0, max, 1.15, 0), 2));
     const gain = Math.pow(scale(scaled, 0, max, 1.15, 0), 2);
 
     if (props.master) {
@@ -29,11 +30,8 @@ const Fader = (props) => {
     } else {
       props.gainNode.gain.value = 1;
     }
-    // setGain(1);
     setPosition(-171);
   };
-
-  // console.log(props.gainNode);
 
   const max = props.master ? 314 : 220;
 

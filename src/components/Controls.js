@@ -5,7 +5,6 @@ import { AudioContext } from "../context/Audio";
 
 const Controls = () => {
   const audioContext = useContext(AudioContext);
-
   const playingClass = audioContext.playing() ? "" : "paused";
 
   return (

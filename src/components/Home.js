@@ -3,8 +3,6 @@ import React from "react";
 import Mixer from "./Mixer";
 import Controls from "./Controls";
 
-import { AudioContext } from "../context/Audio";
-
 const Home = () => {
   // useEffect(() => {
   //   audioContext.loadAudio();
