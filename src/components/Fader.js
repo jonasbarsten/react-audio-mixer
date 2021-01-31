@@ -24,7 +24,11 @@ const Fader = (props) => {
   };
 
   const resetFader = () => {
-    props.gainNode.gain.value = 1;
+    if (props.master) {
+      audioContext.setMasterGain(1);
+    } else {
+      props.gainNode.gain.value = 1;
+    }
     // setGain(1);
     setPosition(-171);
   };

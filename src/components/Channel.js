@@ -32,7 +32,12 @@ const Channel = (props) => {
           PFL
         </button>
         <Panner />
-        <Track dBFS={dBFS} gainNode={track.gainNode} />
+        <Track
+          // dBFS={dBFS}
+          gainNode={track.gainNode}
+          // analyserNode={track.analyserNode}
+          audioNode={track.audioNode}
+        />
         <p className="label">{props.track.name}</p>
       </div>
     </div>

@@ -13,9 +13,13 @@ const Mixer = () => {
     <div id="mixer">
       {tracks &&
         tracks.map((track) => {
-          return <Channel track={track} />;
+          return <Channel key={track.id} track={track} />;
         })}
-      <Vu />
+      <div id="meters">
+        <Vu channel="left" master={true} />
+        <Vu channel="right" master={true} />
+      </div>
+
       <div id="master">
         <Track master={true} />
         <p className="label">Master</p>

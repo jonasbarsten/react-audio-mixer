@@ -2,15 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { dBFSCalc } from "../utils";
 import config from "../config.json";
 
 import Loader from "../components/Loader";
 
 const WindowAudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new WindowAudioContext();
-const fftSize = 2048;
-const timeData = new Uint8Array(fftSize);
 
 export const AudioContext = React.createContext();
 
@@ -18,9 +15,6 @@ const AudioContextProvider = ({ children }) => {
   const [playing, setPlaying] = useState(false);
   const [tracks, setTracks] = useState(null);
   const [masterTrack, setMasterTrack] = useState(null);
-  const [masterDbfsL, setMasterDbfsL] = useState(0);
-  const [rafId, setRRafId] = useState(null);
-  const [audioData, setAudioData] = useState(new Uint8Array(0));
 
   const createMasterNode = () => {
     const gainNode = audioCtx.createGain();
@@ -78,8 +72,21 @@ const AudioContextProvider = ({ children }) => {
       // Creating audio, gain and panner nodes
       const audioNode = audioCtx.createMediaElementSource(audioElement);
       const gainNode = audioCtx.createGain();
-      const pannerOptions = { pan: 0 };
-      const pannerNode = new StereoPannerNode(audioCtx, pannerOptions);
+      let pannerNode;
+
+      // Support for Safari and iOS
+      if (audioCtx.createStereoPanner) {
+        pannerNode = audioCtx.createStereoPanner();
+        pannerNode.pan.value = 0;
+      } else {
+        pannerNode = audioCtx.createPanner();
+        pannerNode.panningModel = "equalpower";
+        pannerNode.setPosition(0, 0, 1 - Math.abs(0));
+      }
+      // const pannerOptions = { pan: 0 };
+      // Not supported in Safari
+      // const pannerNode = new StereoPannerNode(audioCtx, pannerOptions);
+      // const pannerNode = audioCtx.createStereoPanner();
       const analyserNode = audioCtx.createAnalyser();
 
       newTrack.elem = audioElement;
@@ -101,19 +108,9 @@ const AudioContextProvider = ({ children }) => {
     setTracks(newTracks);
   };
 
-  const tick = () => {
-    if (!masterTrack) {
-      return;
-    }
-    masterTrack.analyserNodeL.getByteTimeDomainData(masterTrack.dataArrayL);
-    setAudioData(masterTrack.dataArrayL);
-    setRRafId(requestAnimationFrame(tick));
-  };
-
   useEffect(() => {
     const masterNode = createMasterNode();
     loadAudio(masterNode);
-    setRRafId(requestAnimationFrame(tick));
   }, []);
 
   const togglePlayAll = () => {
@@ -137,36 +134,15 @@ const AudioContextProvider = ({ children }) => {
     masterTrack.gainNode.gain.value = gain;
   };
 
-  const getMasterLevels = () => {
-    return { l: 123, r: 456 };
-  };
-
-  const levels = () => {
-    console.log("booooom");
-    if (!masterTrack) {
-      return;
-    }
-    console.log(masterTrack.analyserNodeL);
-    const len = timeData.length;
-    let floats = new Array(len);
-    masterTrack.analyserNodeL.getByteTimeDomainData(timeData);
-    for (let i = 0; i < len; ++i) {
-      floats[i] = (timeData[i] * 2) / 255 - 1;
-    }
-    const dBFS = playing ? dBFSCalc(floats) : masterDbfsL - 0.8;
-    setMasterDbfsL(dBFS);
-  };
-
-  console.log(audioData);
-
   return (
     <AudioContext.Provider
       value={{
         togglePlayAll,
         playing: () => playing,
         getTracks: () => tracks,
+        getMasterTrack: () => masterTrack,
         setMasterGain: (gain) => setMasterGain(gain),
-        getMasterLevels,
+        getAudioContext: () => audioCtx,
       }}
     >
       {tracks ? children : <Loader />}

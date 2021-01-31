@@ -2,6 +2,8 @@ import React from "react";
 import Home from "./components/Home";
 import AudioContextProvider from "./context/Audio";
 
+import TestComponent from "./components/TestComponent";
+
 import "./fonts/digital-7.eot";
 import "./fonts/digital-7.svg";
 import "./fonts/digital-7.ttf";
@@ -22,6 +24,7 @@ const App = () => {
             <h1>Stokkmaur</h1>
           </header>
           <Home />
+          {/* <TestComponent /> */}
         </div>
       </AudioContextProvider>
       <div id="audio-container"></div>

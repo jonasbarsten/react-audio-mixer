@@ -6,7 +6,7 @@ import Meter from "./Meter";
 const Track = (props) => {
   return (
     <div className="track">
-      <Meter dBFS={props.dBFS} />
+      {props.master ? null : <Meter {...props} />}
       <Fader {...props} />
     </div>
   );
