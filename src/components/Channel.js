@@ -4,24 +4,23 @@ import Panner from "./Panner";
 import Track from "./Track";
 
 const Channel = (props) => {
-  const track = props.track;
-  const [mute, setMute] = useState(false);
-  const [solo, setSolo] = useState(false);
+  // const track = props.track;
+  // const [mute, setMute] = useState(props.track.mute);
+  // const [solo, setSolo] = useState(props.track.solo);
   const [reverb, setReverb] = useState(false);
-  const [dBFS, setDBFS] = useState(-48);
 
   return (
     <div className="channel">
       <div>
         <button
-          className={`btn mute ${mute ? "active" : ""}`}
-          onClick={() => setMute(!mute)}
+          className={`btn mute ${props.track.mute ? "active" : ""}`}
+          onClick={() => props.track.toggleMute(props.track.id)}
         >
           M
         </button>
         <button
-          className={`btn solo ${solo ? "active" : ""}`}
-          onClick={() => setSolo(!solo)}
+          className={`btn solo ${props.track.solo ? "active" : ""}`}
+          onClick={() => props.track.toggleSolo(props.track.id)}
         >
           S
         </button>
@@ -34,9 +33,9 @@ const Channel = (props) => {
         <Panner />
         <Track
           // dBFS={dBFS}
-          gainNode={track.gainNode}
+          gainNode={props.track.gainNode}
           // analyserNode={track.analyserNode}
-          audioNode={track.audioNode}
+          audioNode={props.track.audioNode}
         />
         <p className="label">{props.track.name}</p>
       </div>

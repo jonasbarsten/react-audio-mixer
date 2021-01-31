@@ -83,10 +83,7 @@ const AudioContextProvider = ({ children }) => {
         pannerNode.panningModel = "equalpower";
         pannerNode.setPosition(0, 0, 1 - Math.abs(0));
       }
-      // const pannerOptions = { pan: 0 };
-      // Not supported in Safari
-      // const pannerNode = new StereoPannerNode(audioCtx, pannerOptions);
-      // const pannerNode = audioCtx.createStereoPanner();
+
       const analyserNode = audioCtx.createAnalyser();
 
       newTrack.elem = audioElement;
@@ -94,6 +91,10 @@ const AudioContextProvider = ({ children }) => {
       newTrack.gainNode = gainNode;
       newTrack.pannerNode = pannerNode;
       newTrack.analyserNode = analyserNode;
+      newTrack.solo = false;
+      newTrack.mute = false;
+      newTrack.toggleSolo = (id) => console.log("SOLO: " + id);
+      newTrack.toggleMute = (id) => console.log("MUTE: " + id);
 
       // Connecting the nodes and connecting it to the master gain node
       audioNode
