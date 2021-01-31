@@ -15,6 +15,7 @@ const AudioContextProvider = ({ children }) => {
   const [playing, setPlaying] = useState(false);
   const [tracks, setTracks] = useState(null);
   const [masterTrack, setMasterTrack] = useState(null);
+  const [mutedTracks, setMutedTracks] = useState([]);
 
   const createMasterNode = () => {
     const gainNode = audioCtx.createGain();
@@ -93,8 +94,6 @@ const AudioContextProvider = ({ children }) => {
       newTrack.analyserNode = analyserNode;
       newTrack.solo = false;
       newTrack.mute = false;
-      newTrack.toggleSolo = (id) => console.log("SOLO: " + id);
-      newTrack.toggleMute = (id) => console.log("MUTE: " + id);
 
       // Connecting the nodes and connecting it to the master gain node
       audioNode
@@ -135,6 +134,46 @@ const AudioContextProvider = ({ children }) => {
     masterTrack.gainNode.gain.value = gain;
   };
 
+  const toggleSolo = (id, solo) => {
+    if (solo) {
+      tracks.forEach((track) => {
+        if (track.id === id) {
+          return;
+        }
+        track.gainNode.gain.value = 0;
+      });
+    } else {
+      tracks.forEach((track) => {
+        // Keep muted tracks muted afer unsolo
+        if (mutedTracks.indexOf(track.id) !== -1) {
+          return;
+        } else {
+          track.gainNode.gain.value = 1;
+        }
+      });
+    }
+  };
+
+  const toggleMute = (id, mute) => {
+    // TODO: do this more efficently
+    tracks.forEach((track) => {
+      if (track.id === id) {
+        if (mute) {
+          track.gainNode.gain.value = 0;
+          setMutedTracks([...mutedTracks, track.id]);
+        }
+
+        if (!mute) {
+          track.gainNode.gain.value = 1;
+          const newMutedTracks = [...mutedTracks].filter((trackId) => {
+            return trackId !== id;
+          });
+          setMutedTracks(newMutedTracks);
+        }
+      }
+    });
+  };
+
   return (
     <AudioContext.Provider
       value={{
@@ -144,6 +183,8 @@ const AudioContextProvider = ({ children }) => {
         getMasterTrack: () => masterTrack,
         setMasterGain: (gain) => setMasterGain(gain),
         getAudioContext: () => audioCtx,
+        toggleSolo,
+        toggleMute,
       }}
     >
       {tracks ? children : <Loader />}
