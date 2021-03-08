@@ -16,6 +16,25 @@ const AudioContextProvider = ({ children }) => {
   const [tracks, setTracks] = useState(null);
   const [masterTrack, setMasterTrack] = useState(null);
   const [mutedTracks, setMutedTracks] = useState([]);
+  const [currentTime, setCurrentTime] = useState(0);
+
+  useEffect(() => {
+    const masterNode = createMasterNode();
+    loadAudio(masterNode);
+  }, []);
+
+  useEffect(() => {
+    if (!playing) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const newCurrentTime = tracks[0].elem.currentTime;
+      setCurrentTime(newCurrentTime);
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [playing, tracks]);
 
   const createMasterNode = () => {
     const gainNode = audioCtx.createGain();
@@ -108,11 +127,6 @@ const AudioContextProvider = ({ children }) => {
     setTracks(newTracks);
   };
 
-  useEffect(() => {
-    const masterNode = createMasterNode();
-    loadAudio(masterNode);
-  }, []);
-
   const togglePlayAll = () => {
     if (audioCtx.state === "suspended") {
       audioCtx.resume();
@@ -134,6 +148,7 @@ const AudioContextProvider = ({ children }) => {
     tracks.forEach((track) => {
       track.elem.currentTime = 0;
     });
+    setCurrentTime(0);
   };
 
   const setMasterGain = (gain) => {
@@ -192,6 +207,8 @@ const AudioContextProvider = ({ children }) => {
         toggleSolo,
         toggleMute,
         backToStart,
+        getCurrentTime: () => currentTime,
+        setCurrentTime: (time) => setCurrentTime(time),
       }}
     >
       {tracks ? children : <Loader />}
