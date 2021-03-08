@@ -31,6 +31,7 @@ const Controls = () => {
           className="btn-cntrl ff"
           onClick={() => audioContext.forward()}
         ></button>
+        <button onClick={() => audioContext.exportAudio()}>Save</button>
       </div>
     </div>
   );

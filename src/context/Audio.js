@@ -1,13 +1,51 @@
 // audio node -> gain -> pan -> (analyser) -> master gain -> splitter -> (analyser) -> merger -> dest
-
 import React, { useState, useEffect } from "react";
+import Recorder from "recorder-js";
 import { v4 as uuidv4 } from "uuid";
 import config from "../config.json";
 
 import Loader from "../components/Loader";
 
-const WindowAudioContext = window.AudioContext || window.webkitAudioContext;
-const audioCtx = new WindowAudioContext();
+// const WindowAudioContext = window.AudioContext || window.webkitAudioContext;
+// const OfflineWindowAudioContext =
+//   window.OfflineAudioContext || window.webkitOfflineAudioContext;
+// let audioCtx = new WindowAudioContext();
+let audioCtx = null;
+let recorder = null;
+
+try {
+  window.AudioContext =
+    window.AudioContext ||
+    window.webkitAudioContext ||
+    window.mozAudioContext ||
+    window.msAudioContext;
+  navigator.getUserMedia =
+    navigator.getUserMedia ||
+    navigator.webkitGetUserMedia ||
+    navigator.mozGetUserMedia ||
+    navigator.msGetUserMedia;
+  window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
+  audioCtx = new window.AudioContext();
+  // me.context.createGain = me.context.createGain || me.context.createGainNode;
+} catch (e) {
+  window.alert("Your browser does not support WebAudio, try Google Chrome");
+}
+
+// if recording is supported then load Recorder.js
+if (navigator.getUserMedia) {
+  navigator.getUserMedia(
+    { audio: true },
+    function (stream) {
+      const input = audioCtx.createMediaStreamSource(stream);
+      recorder = new Recorder(input);
+    },
+    function (e) {
+      window.alert("Please enable your microphone to begin recording");
+    }
+  );
+} else {
+  window.alert("Your browser does not support recording, try Google Chrome");
+}
 
 export const AudioContext = React.createContext();
 
@@ -35,6 +73,35 @@ const AudioContextProvider = ({ children }) => {
 
     return () => clearInterval(interval);
   }, [playing, tracks]);
+
+  const exportAudio = () => {
+    // const targetSampleRate = 44100;
+    // const offlineAudioCtx = new OfflineWindowAudioContext({
+    //   sampleRate: targetSampleRate,
+    //   numberOfChannels: tracks.length * 2,
+    //   length: tracks[0].elem.duration * targetSampleRate,
+    // });
+    // masterTrack.gainNode.connect(offlineAudioCtx.destination);
+    // offlineAudioCtx.oncomplete = (event) => {
+    //   console.log(event.renderedBuffer.sampleRate);
+    //   console.log(event.renderedBuffer.getChannelData(0));
+    // };
+    // offlineAudioCtx.startRendering();
+    // Same stuff as above.
+    // audioContext.decodeAudioData(arrayBuffer, (newAudioBuffer) => {
+    //   const newAudioSource = audioContext.createBufferSource();
+    //   const newStereoPanNode = audioContext.createStereoPanner();
+    //   newAudioSource.buffer = newAudioBuffer;
+    //   newAudioSource.connect(newStereoPanNode);
+    //   newAudioSource.connect(audioContext.destination);
+    //   newStereoPanNode.connect(audioContext.destination);
+    //   audioContext.startRendering().then((renderedBuffer) => {
+    //     const wavBuffer = encodeWAV(audioBuffer);
+    //     const blob = new Blob([wavBuffer], { type: "audio/wav" });
+    //     // Download file
+    //   });
+    // });
+  };
 
   const createMasterNode = () => {
     const gainNode = audioCtx.createGain();
@@ -234,6 +301,7 @@ const AudioContextProvider = ({ children }) => {
         setCurrentTime: (time) => setCurrentTime(time),
         rewind,
         forward,
+        exportAudio,
       }}
     >
       {tracks ? children : <Loader />}
