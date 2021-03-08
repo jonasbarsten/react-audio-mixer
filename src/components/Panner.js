@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import { scale } from "../utils";
 
@@ -13,6 +13,10 @@ const Panner = (props) => {
     x: null,
     y: null,
   });
+
+  useEffect(() => {
+    props.pannerNode.pan.value = pan;
+  }, [pan, props.pannerNode.pan]);
 
   const handleDrag = (e) => {
     if (!pannerCanDrag) {
@@ -29,7 +33,6 @@ const Panner = (props) => {
     if (deg >= -150 && deg <= 150) {
       setPannerDeg(deg);
       setPan(scale(deg, -150, 150, -1, 1));
-      props.pannerNode.pan.value = scale(deg, -150, 150, -1, 1);
     }
   };
 
