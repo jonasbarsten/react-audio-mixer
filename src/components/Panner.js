@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 import { scale } from "../utils";
 
-const Panner = () => {
+const Panner = (props) => {
   const [pan, setPan] = useState(0);
   const [pannerDeg, setPannerDeg] = useState(0);
   const [pannerCanDrag, setPannerCanDrag] = useState(false);
@@ -29,6 +29,7 @@ const Panner = () => {
     if (deg >= -150 && deg <= 150) {
       setPannerDeg(deg);
       setPan(scale(deg, -150, 150, -1, 1));
+      props.pannerNode.pan.value = scale(deg, -150, 150, -1, 1);
     }
   };
 

@@ -40,9 +40,9 @@ const Channel = (props) => {
           className={`btn afl ${reverb ? "active" : ""}`}
           onClick={() => setReverb(!reverb)}
         >
-          PFL
+          REV
         </button>
-        <Panner />
+        <Panner pannerNode={props.track.pannerNode} />
         <Track
           gainNode={props.track.gainNode}
           audioNode={props.track.audioNode}
