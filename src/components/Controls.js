@@ -19,12 +19,18 @@ const Controls = () => {
           className="btn-cntrl start"
           onClick={() => audioContext.backToStart()}
         ></button>
-        <button className="btn-cntrl rw"></button>
+        <button
+          className="btn-cntrl rw"
+          onClick={() => audioContext.rewind()}
+        ></button>
         <button
           className={`btn-cntrl play ${playingClass}`}
           onClick={() => audioContext.togglePlayAll()}
         ></button>
-        <button className="btn-cntrl ff"></button>
+        <button
+          className="btn-cntrl ff"
+          onClick={() => audioContext.forward()}
+        ></button>
       </div>
     </div>
   );

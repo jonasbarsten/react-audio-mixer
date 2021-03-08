@@ -144,6 +144,29 @@ const AudioContextProvider = ({ children }) => {
     }
   };
 
+  const rewind = () => {
+    let newTime = currentTime - 5; // One second
+    if (newTime <= 0) {
+      newTime = 0;
+    }
+    tracks.forEach((track) => {
+      track.elem.currentTime = newTime;
+    });
+    setCurrentTime(newTime);
+  };
+
+  const forward = () => {
+    let newTime = currentTime + 5; // One second
+    const maxTime = tracks[0].elem.duration;
+    if (newTime >= maxTime - 1) {
+      newTime = maxTime - 1;
+    }
+    tracks.forEach((track) => {
+      track.elem.currentTime = newTime;
+    });
+    setCurrentTime(newTime);
+  };
+
   const backToStart = () => {
     tracks.forEach((track) => {
       track.elem.currentTime = 0;
@@ -209,6 +232,8 @@ const AudioContextProvider = ({ children }) => {
         backToStart,
         getCurrentTime: () => currentTime,
         setCurrentTime: (time) => setCurrentTime(time),
+        rewind,
+        forward,
       }}
     >
       {tracks ? children : <Loader />}

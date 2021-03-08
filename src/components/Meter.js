@@ -6,15 +6,15 @@ import { AudioContext } from "../context/Audio";
 const Meter = (props) => {
   const audioContext = useContext(AudioContext);
   const meterRef = useRef(null);
+  const audioCtx = audioContext.getAudioContext();
 
   useEffect(() => {
-    const audioCtx = audioContext.getAudioContext();
     const meterNode = webAudioPeakMeter.createMeterNode(
       props.gainNode,
       audioCtx
     );
     webAudioPeakMeter.createMeter(meterRef.current, meterNode, {});
-  }, []);
+  }, [audioCtx, props.gainNode]);
 
   return (
     <>
