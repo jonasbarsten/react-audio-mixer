@@ -5,19 +5,19 @@ import { AudioContext } from "../context/Audio";
 import Panner from "./Panner";
 import Track from "./Track";
 
-const Channel = (props) => {
+const Channel = ({ track = {}, type = "playback" }) => {
   const audioContext = useContext(AudioContext);
-  const [mute, setMute] = useState(props.track.mute);
-  const [solo, setSolo] = useState(props.track.solo);
+  const [mute, setMute] = useState(track.mute);
+  const [solo, setSolo] = useState(track.solo);
   const [reverb, setReverb] = useState(false);
 
   const toggleMute = () => {
-    audioContext.toggleMute(props.track.id, !mute);
+    audioContext.toggleMute(track.id, !mute);
     setMute(!mute);
   };
 
   const toggleSolo = () => {
-    audioContext.toggleSolo(props.track.id, !solo);
+    audioContext.toggleSolo(track.id, !solo);
     setSolo(!solo);
   };
 
@@ -42,12 +42,15 @@ const Channel = (props) => {
         >
           REV
         </button>
-        <Panner pannerNode={props.track.pannerNode} />
-        <Track
-          gainNode={props.track.gainNode}
-          audioNode={props.track.audioNode}
-        />
-        <p className="label">{props.track.name}</p>
+        <Panner pannerNode={track.pannerNode} />
+        <Track gainNode={track.gainNode} audioNode={track.audioNode} />
+        {type === "input" ? (
+          <p className="label" style={{ color: "red" }}>
+            Record
+          </p>
+        ) : (
+          <p className="label">{track.name}</p>
+        )}
       </div>
     </div>
   );

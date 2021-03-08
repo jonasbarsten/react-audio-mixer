@@ -12,9 +12,12 @@ const Mixer = () => {
   return (
     <div id="mixer">
       {tracks &&
+        tracks.length > 0 &&
         tracks.map((track) => {
+          console.log(track);
           return <Channel key={track.id} track={track} />;
         })}
+
       <div id="meters">
         <Vu channel="left" master={true} />
         <Vu channel="right" master={true} />
