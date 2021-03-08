@@ -11,7 +11,10 @@ const Controls = () => {
     <div id="controls">
       <Clock seconds={340} />
       <div className="buttons">
-        <button className="btn-cntrl start"></button>
+        <button
+          className="btn-cntrl start"
+          onClick={() => audioContext.backToStart()}
+        ></button>
         <button className="btn-cntrl rw"></button>
         <button
           className={`btn-cntrl play ${playingClass}`}

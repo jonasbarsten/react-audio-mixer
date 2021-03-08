@@ -130,6 +130,12 @@ const AudioContextProvider = ({ children }) => {
     }
   };
 
+  const backToStart = () => {
+    tracks.forEach((track) => {
+      track.elem.currentTime = 0;
+    });
+  };
+
   const setMasterGain = (gain) => {
     masterTrack.gainNode.gain.value = gain;
   };
@@ -185,6 +191,7 @@ const AudioContextProvider = ({ children }) => {
         getAudioContext: () => audioCtx,
         toggleSolo,
         toggleMute,
+        backToStart,
       }}
     >
       {tracks ? children : <Loader />}
