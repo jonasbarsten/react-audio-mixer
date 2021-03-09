@@ -1,5 +1,5 @@
 // audio node -> gain -> pan -> (analyser) -> master gain -> splitter -> (analyser) -> merger -> dest
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Recorder from "recorder-js";
 import { v4 as uuidv4 } from "uuid";
 import config from "../config.json";
@@ -27,6 +27,20 @@ try {
   window.alert("Your browser does not support WebAudio, try Google Chrome");
 }
 
+function createAsyncBufferSource(arrayBuffer) {
+  return new Promise((resolve, reject) => {
+    audioCtx.decodeAudioData(
+      arrayBuffer,
+      (buffer) => {
+        resolve(buffer);
+      },
+      (e) => {
+        e = reject;
+      }
+    );
+  });
+}
+
 // if recording is supported then load Recorder.js
 // if (navigator.getUserMedia) {
 //   navigator.getUserMedia(
@@ -48,40 +62,38 @@ try {
 export const AudioContext = React.createContext();
 
 const AudioContextProvider = ({ children }) => {
-  const [playing, setPlaying] = useState(false);
-  const [tracks, setTracks] = useState(null);
+  const currentTime = useRef(0);
+  const startedAt = useRef(0);
+  const pausedAt = useRef(0);
   const [masterTrack, setMasterTrack] = useState(null);
-  // const [inputTrack, setInputTrack] = useState(null);
+  const [tracks, setTracks] = useState(null);
+  const [playing, setPlaying] = useState(false);
   const [mutedTracks, setMutedTracks] = useState([]);
-  const [currentTime, setCurrentTime] = useState(0);
+  const [loadProgress, setLoadProgress] = useState(0);
 
   useEffect(() => {
     const masterNode = createMasterNode();
     loadAudio(masterNode);
-    // // const inputTracks = createInputNode(masterNode);
-    // createInputNode(masterNode);
-    // setTracks(playBackTracks);
   }, []);
 
-  useEffect(() => {
-    if (!playing) {
-      return;
+  const setAndGetCurrentTime = () => {
+    if (pausedAt) {
+      currentTime.current = pausedAt;
+      return pausedAt;
     }
-
-    const interval = setInterval(() => {
-      const newCurrentTime = tracks[0].elem.currentTime;
-      setCurrentTime(newCurrentTime);
-    }, 100);
-
-    return () => clearInterval(interval);
-  }, [playing, tracks]);
+    if (startedAt) {
+      currentTime.current = audioCtx.currentTime - startedAt;
+      return audioCtx.currentTime - startedAt;
+    }
+    return 0;
+  };
 
   const exportAudio = () => {
     console.log("Exporting ...");
   };
 
   const record = () => {
-    recorder.startTime = currentTime;
+    recorder.startTime = currentTime.current;
     recorder.start();
   };
 
@@ -140,6 +152,7 @@ const AudioContextProvider = ({ children }) => {
           // Creating audio, gain and panner nodes
           const audioNode = audioCtx.createMediaStreamSource(stream);
           const gainNode = audioCtx.createGain();
+          const muteNode = audioCtx.createGain();
           let pannerNode;
 
           // Support for Safari and iOS
@@ -159,13 +172,18 @@ const AudioContextProvider = ({ children }) => {
           newInputTrack.type = "input";
           newInputTrack.audioNode = audioNode;
           newInputTrack.gainNode = gainNode;
+          newInputTrack.muteNode = muteNode;
           newInputTrack.pannerNode = pannerNode;
           newInputTrack.analyserNode = analyserNode;
           newInputTrack.solo = false;
-          newInputTrack.mute = false;
+          newInputTrack.mute = true;
+
+          newInputTrack.muteNode.gain.value = 0;
+          setMutedTracks([...mutedTracks, newInputTrack.id]);
 
           // Connecting the nodes and connecting it to the master gain node
           audioNode
+            .connect(muteNode)
             .connect(gainNode)
             .connect(pannerNode)
             .connect(analyserNode)
@@ -175,6 +193,7 @@ const AudioContextProvider = ({ children }) => {
 
           setTracks(allNewTracks); // TODO: convert this stuff into AWAIT and do it better ... e.g. fist load audio files, then load mic
           // Now if someone doesnt have mic, they can not just play back ...
+          // setReload(!reload);
         })
         .catch((e) => {
           window.alert("The following gUM error occurred: " + e);
@@ -186,11 +205,14 @@ const AudioContextProvider = ({ children }) => {
     }
   };
 
-  const loadAudio = (masterNode) => {
+  const loadAudio = async (masterNode) => {
     const audioContainer = document.getElementById("audio-container");
     let newTracks = [];
-
-    config.tracks.forEach((track) => {
+    let count = 1;
+    for (const track of config.tracks) {
+      const progress = count / config.tracks.length;
+      setLoadProgress(progress);
+      count++;
       if (!track) {
         return;
       }
@@ -204,9 +226,19 @@ const AudioContextProvider = ({ children }) => {
       audioElement.src = config.audioRoot + track.fileName;
       audioContainer.appendChild(audioElement);
 
+      // console.log(audioElement);
+
+      // Trying to use audio buffer instead of audio element
+      const response = await fetch(`/sounds/${track.fileName}`);
+      const audioArrayBuffer = await response.arrayBuffer();
+      const decodedAudio = await createAsyncBufferSource(audioArrayBuffer);
+      const bufferSource = audioCtx.createBufferSource();
+      bufferSource.buffer = decodedAudio;
+
       // Creating audio, gain and panner nodes
       const audioNode = audioCtx.createMediaElementSource(audioElement);
       const gainNode = audioCtx.createGain();
+      const muteNode = audioCtx.createGain();
       let pannerNode;
 
       // Support for Safari and iOS
@@ -222,25 +254,37 @@ const AudioContextProvider = ({ children }) => {
       const analyserNode = audioCtx.createAnalyser();
 
       newTrack.elem = audioElement;
+      newTrack.decodedAudio = decodedAudio;
+      newTrack.buffer = bufferSource;
       newTrack.type = "playback";
       newTrack.audioNode = audioNode;
       newTrack.gainNode = gainNode;
+      newTrack.muteNode = muteNode;
       newTrack.pannerNode = pannerNode;
       newTrack.analyserNode = analyserNode;
       newTrack.solo = false;
       newTrack.mute = false;
 
       // Connecting the nodes and connecting it to the master gain node
-      audioNode
+      bufferSource
+        .connect(muteNode)
         .connect(gainNode)
         .connect(pannerNode)
         .connect(analyserNode)
         .connect(masterNode.gainNode);
 
       newTracks.push(newTrack);
-    });
+    }
 
     createInputNode(masterNode, newTracks);
+  };
+
+  const playBufferNode = (track, offset) => {
+    const bufferSource = audioCtx.createBufferSource();
+    bufferSource.buffer = track.decodedAudio;
+    track.buffer = bufferSource;
+    track.buffer.connect(track.muteNode);
+    track.buffer.start(0, offset);
   };
 
   const togglePlayAll = () => {
@@ -248,24 +292,30 @@ const AudioContextProvider = ({ children }) => {
       audioCtx.resume();
     }
     if (!playing) {
+      const offset = pausedAt.current;
+
       tracks.forEach((track) => {
         if (track.type === "playback") {
-          track.elem.play();
+          playBufferNode(track, offset);
         }
       });
+      startedAt.current = audioCtx.currentTime - offset;
+      pausedAt.current = 0;
       setPlaying(true);
     } else {
+      const elapsed = audioCtx.currentTime - startedAt.current;
       tracks.forEach((track) => {
         if (track.type === "playback") {
-          track.elem.pause();
+          track.buffer.stop();
         }
       });
+      pausedAt.current = elapsed;
       setPlaying(false);
     }
   };
 
   const rewind = () => {
-    let newTime = currentTime - 5; // One second
+    let newTime = currentTime.current - 5; // One second
     if (newTime <= 0) {
       newTime = 0;
     }
@@ -274,11 +324,11 @@ const AudioContextProvider = ({ children }) => {
         track.elem.currentTime = newTime;
       }
     });
-    setCurrentTime(newTime);
+    currentTime.current = newTime;
   };
 
   const forward = () => {
-    let newTime = currentTime + 5; // One second
+    let newTime = currentTime.current + 5; // One second
     const maxTime = tracks[0].elem.duration;
     if (newTime >= maxTime - 1) {
       newTime = maxTime - 1;
@@ -288,7 +338,7 @@ const AudioContextProvider = ({ children }) => {
         track.elem.currentTime = newTime;
       }
     });
-    setCurrentTime(newTime);
+    currentTime.current = newTime;
   };
 
   const backToStart = () => {
@@ -297,7 +347,7 @@ const AudioContextProvider = ({ children }) => {
         track.elem.currentTime = 0;
       }
     });
-    setCurrentTime(0);
+    currentTime.current = 0;
   };
 
   const setMasterGain = (gain) => {
@@ -308,9 +358,12 @@ const AudioContextProvider = ({ children }) => {
     if (solo) {
       tracks.forEach((track) => {
         if (track.id === id) {
+          track.solo = true;
           return;
         }
-        track.gainNode.gain.value = 0;
+        track.muteNode.gain.value = 0;
+        track.solo = false;
+        track.mute = true;
       });
     } else {
       tracks.forEach((track) => {
@@ -318,7 +371,8 @@ const AudioContextProvider = ({ children }) => {
         if (mutedTracks.indexOf(track.id) !== -1) {
           return;
         } else {
-          track.gainNode.gain.value = 1;
+          track.muteNode.gain.value = 1;
+          track.solo = false;
         }
       });
     }
@@ -329,12 +383,12 @@ const AudioContextProvider = ({ children }) => {
     tracks.forEach((track) => {
       if (track.id === id) {
         if (mute) {
-          track.gainNode.gain.value = 0;
+          track.muteNode.gain.value = 0;
           setMutedTracks([...mutedTracks, track.id]);
         }
 
         if (!mute) {
-          track.gainNode.gain.value = 1;
+          track.muteNode.gain.value = 1;
           const newMutedTracks = [...mutedTracks].filter((trackId) => {
             return trackId !== id;
           });
@@ -356,17 +410,19 @@ const AudioContextProvider = ({ children }) => {
         toggleSolo,
         toggleMute,
         backToStart,
-        getCurrentTime: () => currentTime,
-        setCurrentTime: (time) => setCurrentTime(time),
         rewind,
         forward,
         exportAudio,
         record,
         recordStop,
-        // getInputTrack: () => inputTrack,
+        setAndGetCurrentTime,
       }}
     >
-      {tracks ? children : <Loader />}
+      {tracks && tracks.length > 0 ? (
+        children
+      ) : (
+        <Loader progress={loadProgress} />
+      )}
     </AudioContext.Provider>
   );
 };

@@ -1,19 +1,30 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 
 import Clock from "./Clock";
 import { AudioContext } from "../context/Audio";
-import { unstable_renderSubtreeIntoContainer } from "react-dom";
 
 const Controls = () => {
+  const [currentTime, setCurrentTime] = useState(0);
   const audioContext = useContext(AudioContext);
-  // const [currentTime, setCurrentTime] = useState(0);
   const playingClass = audioContext.playing() ? "" : "paused";
 
-  // console.log(currentTime);
+  useEffect(() => {
+    if (!audioContext.playing()) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      console.log("Booom");
+      const newCurrentTime = audioContext.setAndGetCurrentTime();
+      setCurrentTime(newCurrentTime);
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [audioContext]);
 
   return (
     <div id="controls">
-      <Clock seconds={audioContext.getCurrentTime()} />
+      <Clock seconds={currentTime} />
       <div className="buttons">
         <button
           className="btn-cntrl start"
