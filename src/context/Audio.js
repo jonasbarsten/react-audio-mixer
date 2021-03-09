@@ -147,11 +147,18 @@ const AudioContextProvider = ({ children }) => {
       navigator.mediaDevices
         .getUserMedia({ audio: true })
         .then((stream) => {
-          let newInputTrack = {};
-          // Creating audio, gain and panner nodes
+          let newInputTrack = {
+            id: uuidv4(),
+            type: "input",
+            solo: false,
+            mute: true,
+          };
+
+          // Creating audio, gain, analyser and panner nodes
           const audioNode = audioCtx.createMediaStreamSource(stream);
           const gainNode = audioCtx.createGain();
           const muteNode = audioCtx.createGain();
+          const analyserNode = audioCtx.createAnalyser();
           let pannerNode;
 
           // Support for Safari and iOS
@@ -164,18 +171,13 @@ const AudioContextProvider = ({ children }) => {
             pannerNode.setPosition(0, 0, 1 - Math.abs(0));
           }
 
-          const analyserNode = audioCtx.createAnalyser();
-
-          newInputTrack.id = uuidv4();
-          newInputTrack.type = "input";
           newInputTrack.audioNode = audioNode;
           newInputTrack.gainNode = gainNode;
           newInputTrack.muteNode = muteNode;
           newInputTrack.pannerNode = pannerNode;
           newInputTrack.analyserNode = analyserNode;
-          newInputTrack.solo = false;
-          newInputTrack.mute = true;
 
+          // Mute = true :)
           newInputTrack.muteNode.gain.value = 0;
           setMutedTracks([...mutedTracks, newInputTrack.id]);
 
@@ -217,6 +219,9 @@ const AudioContextProvider = ({ children }) => {
         id: uuidv4(),
         name: track.name,
         fileName: track.fileName,
+        type: "playback",
+        solo: false,
+        mute: false,
       };
 
       // Creating audio buffer source
@@ -226,9 +231,10 @@ const AudioContextProvider = ({ children }) => {
       const bufferSource = audioCtx.createBufferSource();
       bufferSource.buffer = decodedAudio;
 
-      // Creating audio, gain and panner nodes
+      // Creating audio, gain, analyser and panner nodes
       const gainNode = audioCtx.createGain();
       const muteNode = audioCtx.createGain();
+      const analyserNode = audioCtx.createAnalyser();
       let pannerNode;
 
       // Support for Safari and iOS
@@ -241,17 +247,12 @@ const AudioContextProvider = ({ children }) => {
         pannerNode.setPosition(0, 0, 1 - Math.abs(0));
       }
 
-      const analyserNode = audioCtx.createAnalyser();
-
       newTrack.decodedAudio = decodedAudio;
       newTrack.buffer = bufferSource;
-      newTrack.type = "playback";
       newTrack.gainNode = gainNode;
       newTrack.muteNode = muteNode;
       newTrack.pannerNode = pannerNode;
       newTrack.analyserNode = analyserNode;
-      newTrack.solo = false;
-      newTrack.mute = false;
 
       // Connecting the nodes and connecting it to the master gain node
       bufferSource
