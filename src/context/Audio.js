@@ -76,14 +76,14 @@ const AudioContextProvider = ({ children }) => {
     loadAudio(masterNode);
   }, []);
 
-  const setAndGetCurrentTime = () => {
-    if (pausedAt) {
-      currentTime.current = pausedAt;
-      return pausedAt;
+  const getCurrentTime = () => {
+    if (pausedAt.current) {
+      currentTime.current = pausedAt.current;
+      return pausedAt.current;
     }
-    if (startedAt) {
-      currentTime.current = audioCtx.currentTime - startedAt;
-      return audioCtx.currentTime - startedAt;
+    if (startedAt.current) {
+      currentTime.current = audioCtx.currentTime - startedAt.current;
+      return audioCtx.currentTime - startedAt.current;
     }
     return 0;
   };
@@ -287,30 +287,38 @@ const AudioContextProvider = ({ children }) => {
     track.buffer.start(0, offset);
   };
 
-  const togglePlayAll = () => {
+  const playAll = () => {
     if (audioCtx.state === "suspended") {
       audioCtx.resume();
     }
-    if (!playing) {
-      const offset = pausedAt.current;
+    const offset = pausedAt.current;
 
-      tracks.forEach((track) => {
-        if (track.type === "playback") {
-          playBufferNode(track, offset);
-        }
-      });
-      startedAt.current = audioCtx.currentTime - offset;
-      pausedAt.current = 0;
-      setPlaying(true);
+    tracks.forEach((track) => {
+      if (track.type === "playback") {
+        playBufferNode(track, offset);
+      }
+    });
+    startedAt.current = audioCtx.currentTime - offset;
+    pausedAt.current = 0;
+    setPlaying(true);
+  };
+
+  const pauseAll = () => {
+    const elapsed = audioCtx.currentTime - startedAt.current;
+    tracks.forEach((track) => {
+      if (track.type === "playback") {
+        track.buffer.stop();
+      }
+    });
+    pausedAt.current = elapsed;
+    setPlaying(false);
+  };
+
+  const togglePlayAll = () => {
+    if (!playing) {
+      playAll();
     } else {
-      const elapsed = audioCtx.currentTime - startedAt.current;
-      tracks.forEach((track) => {
-        if (track.type === "playback") {
-          track.buffer.stop();
-        }
-      });
-      pausedAt.current = elapsed;
-      setPlaying(false);
+      pauseAll();
     }
   };
 
@@ -342,12 +350,16 @@ const AudioContextProvider = ({ children }) => {
   };
 
   const backToStart = () => {
+    pausedAt.current = 0;
+    startedAt.current = 0;
     tracks.forEach((track) => {
       if (track.type === "playback") {
-        track.elem.currentTime = 0;
+        track.buffer.stop(0);
       }
     });
-    currentTime.current = 0;
+    if (playing) {
+      playAll();
+    }
   };
 
   const setMasterGain = (gain) => {
@@ -415,7 +427,7 @@ const AudioContextProvider = ({ children }) => {
         exportAudio,
         record,
         recordStop,
-        setAndGetCurrentTime,
+        getCurrentTime,
       }}
     >
       {tracks && tracks.length > 0 ? (

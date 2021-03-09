@@ -15,7 +15,7 @@ const Controls = () => {
 
     const interval = setInterval(() => {
       console.log("Booom");
-      const newCurrentTime = audioContext.setAndGetCurrentTime();
+      const newCurrentTime = audioContext.getCurrentTime();
       setCurrentTime(newCurrentTime);
     }, 100);
 
@@ -28,7 +28,11 @@ const Controls = () => {
       <div className="buttons">
         <button
           className="btn-cntrl start"
-          onClick={() => audioContext.backToStart()}
+          onClick={() => {
+            audioContext.backToStart();
+            // The interval will not run when not playing, so we set it manually here
+            setCurrentTime(0);
+          }}
         ></button>
         <button
           className="btn-cntrl rw"
