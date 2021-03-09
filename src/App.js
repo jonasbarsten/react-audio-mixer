@@ -2,7 +2,7 @@ import React from "react";
 import Home from "./components/Home";
 import AudioContextProvider from "./context/Audio";
 
-import TestComponent from "./components/TestComponent";
+// import TestComponent from "./components/TestComponent";
 
 import "./fonts/digital-7.eot";
 import "./fonts/digital-7.svg";
@@ -27,7 +27,7 @@ const App = () => {
           {/* <TestComponent /> */}
         </div>
       </AudioContextProvider>
-      <div id="audio-container"></div>
+      {/* <div id="audio-container"></div> */}
     </>
   );
 };

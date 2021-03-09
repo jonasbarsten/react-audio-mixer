@@ -1,4 +1,4 @@
-// audio node -> gain -> pan -> (analyser) -> master gain -> splitter -> (analyser) -> merger -> dest
+// buffer source -> mute -> gain -> pan -> (track analyser) -> master gain -> splitter -> (master analyser x 2 VU) -> merger -> dest
 import React, { useState, useEffect, useRef } from "react";
 import Recorder from "recorder-js";
 import { v4 as uuidv4 } from "uuid";
@@ -22,7 +22,6 @@ try {
     navigator.msGetUserMedia;
   window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
   audioCtx = new window.AudioContext();
-  // me.context.createGain = me.context.createGain || me.context.createGainNode;
 } catch (e) {
   window.alert("Your browser does not support WebAudio, try Google Chrome");
 }
@@ -167,7 +166,6 @@ const AudioContextProvider = ({ children }) => {
 
           const analyserNode = audioCtx.createAnalyser();
 
-          // newInputTrack.elem = audioElement;
           newInputTrack.id = uuidv4();
           newInputTrack.type = "input";
           newInputTrack.audioNode = audioNode;
@@ -206,7 +204,6 @@ const AudioContextProvider = ({ children }) => {
   };
 
   const loadAudio = async (masterNode) => {
-    const audioContainer = document.getElementById("audio-container");
     let newTracks = [];
     let count = 1;
     for (const track of config.tracks) {
@@ -221,14 +218,8 @@ const AudioContextProvider = ({ children }) => {
         name: track.name,
         fileName: track.fileName,
       };
-      // Creating audio element in the DOM with an audio source
-      const audioElement = document.createElement("AUDIO");
-      audioElement.src = config.audioRoot + track.fileName;
-      audioContainer.appendChild(audioElement);
 
-      // console.log(audioElement);
-
-      // Trying to use audio buffer instead of audio element
+      // Creating audio buffer source
       const response = await fetch(`/sounds/${track.fileName}`);
       const audioArrayBuffer = await response.arrayBuffer();
       const decodedAudio = await createAsyncBufferSource(audioArrayBuffer);
@@ -236,7 +227,6 @@ const AudioContextProvider = ({ children }) => {
       bufferSource.buffer = decodedAudio;
 
       // Creating audio, gain and panner nodes
-      const audioNode = audioCtx.createMediaElementSource(audioElement);
       const gainNode = audioCtx.createGain();
       const muteNode = audioCtx.createGain();
       let pannerNode;
@@ -253,11 +243,9 @@ const AudioContextProvider = ({ children }) => {
 
       const analyserNode = audioCtx.createAnalyser();
 
-      newTrack.elem = audioElement;
       newTrack.decodedAudio = decodedAudio;
       newTrack.buffer = bufferSource;
       newTrack.type = "playback";
-      newTrack.audioNode = audioNode;
       newTrack.gainNode = gainNode;
       newTrack.muteNode = muteNode;
       newTrack.pannerNode = pannerNode;
@@ -322,6 +310,7 @@ const AudioContextProvider = ({ children }) => {
     }
   };
 
+  // TODO: implement with buffer
   const rewind = () => {
     let newTime = currentTime.current - 5; // One second
     if (newTime <= 0) {
@@ -335,6 +324,7 @@ const AudioContextProvider = ({ children }) => {
     currentTime.current = newTime;
   };
 
+  // TODO: implement with buffer
   const forward = () => {
     let newTime = currentTime.current + 5; // One second
     const maxTime = tracks[0].elem.duration;

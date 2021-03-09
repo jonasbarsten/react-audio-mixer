@@ -12,9 +12,7 @@ const Controls = () => {
     if (!audioContext.playing()) {
       return;
     }
-
     const interval = setInterval(() => {
-      console.log("Booom");
       const newCurrentTime = audioContext.getCurrentTime();
       setCurrentTime(newCurrentTime);
     }, 100);
