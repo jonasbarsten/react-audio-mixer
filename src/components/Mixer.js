@@ -14,7 +14,6 @@ const Mixer = () => {
       {tracks &&
         tracks.length > 0 &&
         tracks.map((track) => {
-          console.log(track);
           return <Channel key={track.id} track={track} />;
         })}
 

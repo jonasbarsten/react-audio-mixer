@@ -1,0 +1,9 @@
+.channel {
+  .record {
+    color: red;
+    background: white;
+    &:hover {
+      cursor: pointer;
+    }
+  }
+}

@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useContext } from "react";
+
+import { AudioContext } from "../context/Audio";
 
 import Mixer from "./Mixer";
 import Controls from "./Controls";
 
 const Home = () => {
+  const audioContext = useContext(AudioContext);
   // useEffect(() => {
   //   audioContext.loadAudio();
   // }, []);
@@ -57,6 +60,8 @@ const Home = () => {
 
       <Mixer />
       <Controls />
+      <button onClick={() => audioContext.exportAudio()}>Export</button>
+      <audio src={audioContext.audioURL()} controls></audio>
     </>
   );
 };

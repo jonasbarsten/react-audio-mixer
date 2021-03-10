@@ -5,11 +5,16 @@ import { AudioContext } from "../context/Audio";
 import Panner from "./Panner";
 import Track from "./Track";
 
-const Channel = ({ track = {}, type = "playback" }) => {
+import "./Channel.scss";
+
+const Channel = ({ track = {} }) => {
   const audioContext = useContext(AudioContext);
+  const [recording, setRecording] = useState(false);
   const [mute, setMute] = useState(track.mute);
   const [solo, setSolo] = useState(track.solo);
   const [reverb, setReverb] = useState(false);
+
+  const style = track.type === "input" ? { backgroundColor: "white" } : {};
 
   const toggleMute = () => {
     audioContext.toggleMute(track.id, !mute);
@@ -21,8 +26,20 @@ const Channel = ({ track = {}, type = "playback" }) => {
     setSolo(!solo);
   };
 
+  const toggleRecording = () => {
+    if (recording) {
+      audioContext.recordStop(track);
+      setRecording(false);
+    } else {
+      audioContext.recordStart(track);
+      setRecording(true);
+    }
+  };
+
+  const recordingClass = recording ? " recording" : " record";
+
   return (
-    <div className="channel">
+    <div className="channel" style={style}>
       <div>
         <button
           className={`btn mute ${mute ? "active" : ""}`}
@@ -44,8 +61,8 @@ const Channel = ({ track = {}, type = "playback" }) => {
         </button>
         <Panner pannerNode={track.pannerNode} />
         <Track gainNode={track.gainNode} audioNode={track.audioNode} />
-        {type === "input" ? (
-          <p className="label" style={{ color: "red" }}>
+        {track.type === "input" ? (
+          <p className={`label${recordingClass}`} onClick={toggleRecording}>
             Record
           </p>
         ) : (

@@ -44,9 +44,6 @@ const Controls = () => {
           className="btn-cntrl ff"
           onClick={() => audioContext.forward()}
         ></button>
-        <button onClick={() => audioContext.exportAudio()}>Save</button>
-        <button onClick={() => audioContext.record()}>Record</button>
-        <button onClick={() => audioContext.recordStop()}>Stop Record</button>
       </div>
     </div>
   );

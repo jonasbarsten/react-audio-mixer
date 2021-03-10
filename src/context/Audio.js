@@ -1,13 +1,19 @@
 // buffer source -> mute -> gain -> pan -> (track analyser) -> master gain -> splitter -> (master analyser x 2 VU) -> merger -> dest
 import React, { useState, useEffect, useRef } from "react";
-import Recorder from "recorder-js";
-import { v4 as uuidv4 } from "uuid";
-import config from "../config.json";
 
+// Libs
+import createMasterTrack from "../libs/createMasterTrack";
+import createPlaybackTrack from "../libs/createPlaybackTrack";
+import createInputTrack from "../libs/createInputTrack";
+import { createAsyncBufferSource } from "../libs/audio";
+
+// Components
 import Loader from "../components/Loader";
 
+// Config
+import config from "../config.json";
+
 let audioCtx = null;
-let recorder = null;
 
 try {
   window.AudioContext =
@@ -26,54 +32,80 @@ try {
   window.alert("Your browser does not support WebAudio, try Google Chrome");
 }
 
-function createAsyncBufferSource(arrayBuffer) {
-  return new Promise((resolve, reject) => {
-    audioCtx.decodeAudioData(
-      arrayBuffer,
-      (buffer) => {
-        resolve(buffer);
-      },
-      (e) => {
-        e = reject;
-      }
-    );
-  });
-}
-
-// if recording is supported then load Recorder.js
-// if (navigator.getUserMedia) {
-//   navigator.getUserMedia(
-//     { audio: true },
-//     function (stream) {
-//       console.log("Boom");
-//       // const input = audioCtx.createMediaStreamSource(stream);
-//       recorder = new Recorder(audioCtx);
-//       recorder.init(stream);
-//     },
-//     function (e) {
-//       window.alert("Please enable your microphone to begin recording");
-//     }
-//   );
-// } else {
-//   window.alert("Your browser does not support recording, try Google Chrome");
-// }
-
 export const AudioContext = React.createContext();
 
 const AudioContextProvider = ({ children }) => {
   const currentTime = useRef(0);
   const startedAt = useRef(0);
   const pausedAt = useRef(0);
+  const offset = useRef(-150);
+  const recording = useRef(false);
+  const recordedChunks = useRef([]);
   const [masterTrack, setMasterTrack] = useState(null);
   const [tracks, setTracks] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [mutedTracks, setMutedTracks] = useState([]);
   const [loadProgress, setLoadProgress] = useState(0);
+  const [audioURL, setAudioURL] = useState("");
 
   useEffect(() => {
-    const masterNode = createMasterNode();
-    loadAudio(masterNode);
+    const onLoad = async () => {
+      const masterNode = createMasterNode();
+      const playbackTracks = await loadAudio(masterNode);
+      const inputTracks = await createInputNode(masterNode);
+      setTracks([...playbackTracks, ...inputTracks]);
+    };
+
+    onLoad();
+
+    // TODO: disable web audio context in some way ...
+    return () => {
+      tracks &&
+        tracks.forEach((track) => {
+          if (track.recorder) {
+            track.recorder.removeEventListener(
+              "dataavailable",
+              handleRecordedData
+            );
+          }
+        });
+    };
   }, []);
+
+  const createMasterNode = () => {
+    const masterNode = createMasterTrack(audioCtx);
+    setMasterTrack(masterNode);
+    return masterNode;
+  };
+
+  const loadAudio = async (masterNode) => {
+    let newTracks = [];
+    let count = 1;
+    for (const track of config.tracks) {
+      const progress = count / config.tracks.length;
+      setLoadProgress(progress);
+      count++;
+      if (!track) {
+        return;
+      }
+      const newTrack = await createPlaybackTrack(audioCtx, masterNode, track);
+      newTracks.push(newTrack);
+    }
+    return newTracks;
+    // createInputNode(masterNode, newTracks);
+  };
+
+  const createInputNode = async (masterNode) => {
+    const newInputTrack = await createInputTrack(audioCtx, masterNode);
+    setMutedTracks([...mutedTracks, newInputTrack.id]);
+
+    newInputTrack.recorder.addEventListener(
+      "dataavailable",
+      handleRecordedData
+    );
+
+    return [newInputTrack];
+  };
 
   const getCurrentTime = () => {
     if (pausedAt.current) {
@@ -91,181 +123,38 @@ const AudioContextProvider = ({ children }) => {
     console.log("Exporting ...");
   };
 
-  const record = () => {
-    recorder.startTime = currentTime.current;
-    recorder.start();
+  const recordStart = (track) => {
+    recording.current = true;
+    track.recorder.startTime = audioCtx.currentTime;
+    track.recorder.start();
   };
 
-  const recordStop = () => {
-    recorder.stop().then(({ blob }) => {
-      Recorder.download(blob, "my-audio-file");
-    });
-  };
+  const recordStop = async (track) => {
+    recording.current = false;
+    track.recorder.stop();
+    console.log(recordedChunks.current);
 
-  const createMasterNode = () => {
-    const gainNode = audioCtx.createGain();
-    const splitterNode = audioCtx.createChannelSplitter(2);
-    const mergerNode = audioCtx.createChannelMerger(2);
-    const analyserNodeL = audioCtx.createAnalyser();
-    const analyserNodeR = audioCtx.createAnalyser();
-
-    analyserNodeL.smoothingTimeConstant = 1;
-    analyserNodeR.smoothingTimeConstant = 1;
-    analyserNodeL.fftSize = 2048;
-    analyserNodeR.fftSize = 2048;
-
-    const dataArrayL = new Uint8Array(analyserNodeL.frequencyBinCount);
-
-    // Connecting the cables
-    gainNode.connect(splitterNode);
-    splitterNode.connect(analyserNodeL, 0, 0);
-    splitterNode.connect(analyserNodeR, 1, 0);
-    splitterNode.connect(mergerNode, 0, 0);
-    splitterNode.connect(mergerNode, 1, 1);
-    mergerNode.connect(audioCtx.destination);
-
-    // Save in state
-    const masterNode = {
-      gainNode,
-      splitterNode,
-      mergerNode,
-      analyserNodeL,
-      analyserNodeR,
-      dataArrayL,
-      dbfsL: 0,
-      dbfsR: 0,
-    };
-
-    setMasterTrack(masterNode);
-    return masterNode;
-  };
-
-  const createInputNode = async (masterNode, newTracks) => {
-    let allNewTracks = newTracks;
-    if (navigator.mediaDevices) {
-      console.log("getUserMedia supported.");
-      navigator.mediaDevices
-        .getUserMedia({ audio: true })
-        .then((stream) => {
-          let newInputTrack = {
-            id: uuidv4(),
-            type: "input",
-            solo: false,
-            mute: true,
-          };
-
-          // Creating audio, gain, analyser and panner nodes
-          const audioNode = audioCtx.createMediaStreamSource(stream);
-          const gainNode = audioCtx.createGain();
-          const muteNode = audioCtx.createGain();
-          const analyserNode = audioCtx.createAnalyser();
-          let pannerNode;
-
-          // Support for Safari and iOS
-          if (audioCtx.createStereoPanner) {
-            pannerNode = audioCtx.createStereoPanner();
-            pannerNode.pan.value = 0;
-          } else {
-            pannerNode = audioCtx.createPanner();
-            pannerNode.panningModel = "equalpower";
-            pannerNode.setPosition(0, 0, 1 - Math.abs(0));
-          }
-
-          newInputTrack.audioNode = audioNode;
-          newInputTrack.gainNode = gainNode;
-          newInputTrack.muteNode = muteNode;
-          newInputTrack.pannerNode = pannerNode;
-          newInputTrack.analyserNode = analyserNode;
-
-          // Mute = true :)
-          newInputTrack.muteNode.gain.value = 0;
-          setMutedTracks([...mutedTracks, newInputTrack.id]);
-
-          // Connecting the nodes and connecting it to the master gain node
-          audioNode
-            .connect(muteNode)
-            .connect(gainNode)
-            .connect(pannerNode)
-            .connect(analyserNode)
-            .connect(masterNode.gainNode);
-
-          allNewTracks.push(newInputTrack);
-
-          setTracks(allNewTracks); // TODO: convert this stuff into AWAIT and do it better ... e.g. fist load audio files, then load mic
-          // Now if someone doesnt have mic, they can not just play back ...
-          // setReload(!reload);
-        })
-        .catch((e) => {
-          window.alert("The following gUM error occurred: " + e);
-        });
-    } else {
-      window.alert(
-        "Your browser does not support recording, try Google Chrome"
+    setTimeout(async () => {
+      const blob = new Blob(recordedChunks.current, {
+        type: "audio/ogg; codecs=opus",
+      });
+      const audioArrayBuffer = await blob.arrayBuffer();
+      const decodedAudio = await createAsyncBufferSource(
+        audioCtx,
+        audioArrayBuffer
       );
-    }
-  };
-
-  const loadAudio = async (masterNode) => {
-    let newTracks = [];
-    let count = 1;
-    for (const track of config.tracks) {
-      const progress = count / config.tracks.length;
-      setLoadProgress(progress);
-      count++;
-      if (!track) {
-        return;
-      }
-      let newTrack = {
-        id: uuidv4(),
-        name: track.name,
-        fileName: track.fileName,
-        type: "playback",
-        solo: false,
-        mute: false,
-      };
-
-      // Creating audio buffer source
-      const response = await fetch(`/sounds/${track.fileName}`);
-      const audioArrayBuffer = await response.arrayBuffer();
-      const decodedAudio = await createAsyncBufferSource(audioArrayBuffer);
       const bufferSource = audioCtx.createBufferSource();
       bufferSource.buffer = decodedAudio;
 
-      // Creating audio, gain, analyser and panner nodes
-      const gainNode = audioCtx.createGain();
-      const muteNode = audioCtx.createGain();
-      const analyserNode = audioCtx.createAnalyser();
-      let pannerNode;
+      track.buffer = bufferSource;
 
-      // Support for Safari and iOS
-      if (audioCtx.createStereoPanner) {
-        pannerNode = audioCtx.createStereoPanner();
-        pannerNode.pan.value = 0;
-      } else {
-        pannerNode = audioCtx.createPanner();
-        pannerNode.panningModel = "equalpower";
-        pannerNode.setPosition(0, 0, 1 - Math.abs(0));
-      }
+      recordedChunks.current = [];
+    }, 1000);
+  };
 
-      newTrack.decodedAudio = decodedAudio;
-      newTrack.buffer = bufferSource;
-      newTrack.gainNode = gainNode;
-      newTrack.muteNode = muteNode;
-      newTrack.pannerNode = pannerNode;
-      newTrack.analyserNode = analyserNode;
-
-      // Connecting the nodes and connecting it to the master gain node
-      bufferSource
-        .connect(muteNode)
-        .connect(gainNode)
-        .connect(pannerNode)
-        .connect(analyserNode)
-        .connect(masterNode.gainNode);
-
-      newTracks.push(newTrack);
-    }
-
-    createInputNode(masterNode, newTracks);
+  const handleRecordedData = async (e) => {
+    const allChunks = [...recordedChunks.current, e.data];
+    recordedChunks.current = allChunks;
   };
 
   const playBufferNode = (track, offset) => {
@@ -416,8 +305,9 @@ const AudioContextProvider = ({ children }) => {
         rewind,
         forward,
         exportAudio,
-        record,
+        recordStart,
         recordStop,
+        audioURL: () => audioURL,
         getCurrentTime,
       }}
     >
