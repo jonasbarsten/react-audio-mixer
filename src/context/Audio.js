@@ -108,15 +108,16 @@ const AudioContextProvider = ({ children }) => {
   };
 
   const getCurrentTime = () => {
+    console.log(startedAt.current);
     if (pausedAt.current) {
       currentTime.current = pausedAt.current;
       return pausedAt.current;
     }
-    if (startedAt.current) {
-      currentTime.current = audioCtx.currentTime - startedAt.current;
-      return audioCtx.currentTime - startedAt.current;
-    }
-    return 0;
+    // if (startedAt.current) {
+    currentTime.current = audioCtx.currentTime - startedAt.current;
+    return audioCtx.currentTime - startedAt.current;
+    // }
+    // return 0;
   };
 
   const exportAudio = () => {

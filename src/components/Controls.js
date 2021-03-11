@@ -9,16 +9,19 @@ const Controls = () => {
   const playingClass = audioContext.playing() ? "" : "paused";
 
   useEffect(() => {
+    console.log("Booom");
     if (!audioContext.playing()) {
       return;
     }
+    console.log("Went past");
     const interval = setInterval(() => {
       const newCurrentTime = audioContext.getCurrentTime();
+      console.log(newCurrentTime);
       setCurrentTime(newCurrentTime);
     }, 100);
 
     return () => clearInterval(interval);
-  }, [audioContext]);
+  }, [audioContext.playing()]);
 
   return (
     <div id="controls">
