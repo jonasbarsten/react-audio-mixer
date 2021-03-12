@@ -22,6 +22,7 @@
     "test": "react-scripts test",
     "predeploy": "npm run build",
     "deploy": "aws s3 sync build/ s3://react-audio-mixer --delete",
+    "postdeploy": "aws cloudfront create-invalidation --distribution-id E2O99MC939U3Y4 --paths '/*'",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

@@ -36,7 +36,7 @@ function interleave(inputL, inputR) {
   return result;
 }
 
-function encodeWAV(samples) {
+function encodeWAV(samples, numChannels, sampleRate) {
   var buffer = new ArrayBuffer(44 + samples.length * 2);
   var view = new DataView(buffer);
 
