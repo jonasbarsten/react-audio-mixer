@@ -320,6 +320,7 @@ const AudioContextProvider = ({ children }) => {
         recordStart,
         recordStop,
         getCurrentTime,
+        song: () => song,
       }}
     >
       {tracks && tracks.length > 0 ? (

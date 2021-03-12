@@ -1,5 +1,6 @@
 import React from "react";
 import Home from "./components/Home";
+import Header from "./components/Header";
 import AudioContextProvider from "./context/Audio";
 
 import "./stylesheets/normalize.css";
@@ -13,9 +14,7 @@ const App = () => {
     <>
       <AudioContextProvider>
         <div className="App">
-          <header>
-            <h1>Stokkmaur</h1>
-          </header>
+          <Header />
           <Home />
           {/* <TestComponent /> */}
         </div>
