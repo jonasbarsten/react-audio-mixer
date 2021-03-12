@@ -1,6 +1,8 @@
 import React, { useRef, useEffect } from "react";
 import { formatTime } from "../utils";
 
+import "./Clock.scss";
+
 const Clock = (props) => {
   const canvasRef = useRef(null);
 
@@ -36,6 +38,13 @@ const Clock = (props) => {
   useEffect(() => {
     updatePosition(props.seconds);
   }, [props.seconds]);
+
+  // Ugly hack to reload when the font has loaded
+  useEffect(() => {
+    setTimeout(() => {
+      updatePosition(0);
+    }, 100);
+  }, []);
 
   return (
     <canvas ref={canvasRef} className="clock" width="360" height="120"></canvas>

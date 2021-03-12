@@ -5,6 +5,8 @@ import { AudioContext } from "../context/Audio";
 
 import { scale } from "../utils";
 
+import "./Fader.scss";
+
 const Fader = (props) => {
   const [position, setPosition] = useState(-171);
   const audioContext = useContext(AudioContext);

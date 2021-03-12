@@ -10,6 +10,7 @@
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-draggable": "^4.4.3",
+    "react-icons": "^4.2.0",
     "react-scripts": "4.0.1",
     "uuid": "^8.3.2",
     "web-audio-recorder-js": "^0.0.2",
@@ -19,6 +20,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "predeploy": "npm run build",
+    "deploy": "aws s3 sync build/ s3://react-audio-mixer --delete",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

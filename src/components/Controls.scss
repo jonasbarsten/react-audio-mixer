@@ -1,0 +1,210 @@
+#controls {
+  /* display: none; */
+  // margin: 0 auto;
+  // padding: 16px 12px 8px 10px;
+  // width: 400px;
+
+  // .btn-cntrl {
+  //   background-position: center center;
+  //   background-repeat: no-repeat;
+  //   border-radius: 2px;
+  //   box-shadow: inset 0 -2px hsla(0, 0%, 0%, 0.1),
+  //     0 0 8px 2px hsla(0, 0%, 0%, 0.75);
+  //   display: inline-block;
+  //   margin-left: 6px;
+  // }
+
+  // .record {
+  //   color: red;
+  //   font-size: 2rem;
+  // }
+}
+
+#controls {
+  margin: 0 auto;
+  padding: 16px 12px 8px 10px;
+  width: 450px;
+  display: flex;
+  flex-wrap: wrap;
+  .buttons {
+    top: -6px;
+  }
+  .control-item {
+    flex-grow: 1;
+    text-align: center;
+    background-position: center center;
+    background-repeat: no-repeat;
+    border-radius: 2px;
+    box-shadow: inset 0 -2px hsla(0, 0%, 0%, 0.1),
+      0 0 8px 2px hsla(0, 0%, 0%, 0.75);
+    display: inline-block;
+    margin-left: 6px;
+  }
+  .save {
+    margin-left: 16px;
+    // padding: 9px 14px;
+    background-color: yellow;
+    font-size: 2rem;
+    position: relative;
+    top: 13px;
+    padding-top: 5px;
+  }
+  .start {
+    background-image: url("../img/single_rewind@2x.png"),
+      -webkit-linear-gradient(to bottom, hsl(228, 13%, 92%) 0%, hsl(
+              240,
+              100%,
+              100%
+            )
+            100%);
+    background-image: url("../img/single_rewind@2x.png"),
+      -moz-linear-gradient(to bottom, hsl(228, 13%, 92%) 0%, hsl(
+              240,
+              100%,
+              100%
+            )
+            100%);
+    background-image: url("../img/single_rewind@2x.png"),
+      linear-gradient(
+        to bottom,
+        hsl(228, 13%, 92%) 0%,
+        hsl(240, 100%, 100%) 100%
+      );
+    background-size: 6px 9px, 100%;
+    margin-left: 16px;
+    padding: 9px 14px;
+  }
+
+  .rw {
+    background-image: url("../img/rewind@2x.png"),
+      -webkit-linear-gradient(to bottom, hsl(228, 13%, 92%) 0%, hsl(
+              240,
+              100%,
+              100%
+            )
+            100%);
+    background-image: url("../img/rewind@2x.png"),
+      -moz-linear-gradient(to bottom, hsl(228, 13%, 92%) 0%, hsl(
+              240,
+              100%,
+              100%
+            )
+            100%);
+    background-image: url("../img/rewind@2x.png"),
+      linear-gradient(
+        to bottom,
+        hsl(228, 13%, 92%) 0%,
+        hsl(240, 100%, 100%) 100%
+      );
+    background-size: 12px 9px, 100%;
+    padding: 9px 14px;
+  }
+
+  .play.paused {
+    background-image: url("../img/play@2x.png"),
+      -webkit-linear-gradient(to bottom, hsl(228, 13%, 92%) 0%, hsl(
+              240,
+              100%,
+              100%
+            )
+            100%);
+    background-image: url("../img/play@2x.png"),
+      -moz-linear-gradient(to bottom, hsl(228, 13%, 92%) 0%, hsl(
+              240,
+              100%,
+              100%
+            )
+            100%);
+    background-image: url("../img/play@2x.png"),
+      linear-gradient(
+        to bottom,
+        hsl(228, 13%, 92%) 0%,
+        hsl(240, 100%, 100%) 100%
+      );
+    background-size: 14px 17px, 100%;
+  }
+
+  .ff {
+    background-image: url("../img/forward@2x.png"),
+      -webkit-linear-gradient(to bottom, hsl(228, 13%, 92%) 0%, hsl(
+              240,
+              100%,
+              100%
+            )
+            100%);
+    background-image: url("../img/forward@2x.png"),
+      -moz-linear-gradient(to bottom, hsl(228, 13%, 92%) 0%, hsl(
+              240,
+              100%,
+              100%
+            )
+            100%);
+    background-image: url("../img/forward@2x.png"),
+      linear-gradient(
+        to bottom,
+        hsl(228, 13%, 92%) 0%,
+        hsl(240, 100%, 100%) 100%
+      );
+    background-size: 12px 9px, 100%;
+    padding: 9px 14px;
+  }
+  .play {
+    background-image: url("../img/pause@2x.png"),
+      -webkit-linear-gradient(to bottom, hsl(228, 13%, 92%) 0%, hsl(
+              240,
+              100%,
+              100%
+            )
+            100%);
+    background-image: url("../img/pause@2x.png"),
+      -moz-linear-gradient(to bottom, hsl(228, 13%, 92%) 0%, hsl(
+              240,
+              100%,
+              100%
+            )
+            100%);
+    background-image: url("../img/pause@2x.png"),
+      linear-gradient(
+        to bottom,
+        hsl(228, 13%, 92%) 0%,
+        hsl(240, 100%, 100%) 100%
+      );
+    background-size: 14px 17px, 100%;
+    border-radius: 50%;
+    padding: 18px;
+    // position: relative;
+    /*top: 8px; */
+  }
+  .record {
+    width: 35px;
+    height: 35px;
+    font-size: 0;
+    background-color: red;
+    border: 0;
+    border-radius: 35px;
+    // margin: auto auto 1rem auto;
+    outline: none;
+    padding: 18px;
+  }
+  .not-recording {
+    background-color: darkred;
+  }
+  .recording {
+    animation-name: pulse;
+    animation-duration: 1.5s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0px 0px 5px 0px rgba(173, 0, 0, 0.3);
+  }
+  65% {
+    box-shadow: 0px 0px 5px 13px rgba(173, 0, 0, 0.3);
+  }
+  90% {
+    box-shadow: 0px 0px 5px 13px rgba(173, 0, 0, 0);
+  }
+}

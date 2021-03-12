@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { createAsyncBufferSource } from "./audio";
 
-const createPlaybackTrack = async (audioCtx, masterNode, track) => {
+const createPlaybackTrack = async (audioCtx, masterNode, song, track) => {
   let newTrack = {
     id: uuidv4(),
     name: track.name,
@@ -12,7 +12,7 @@ const createPlaybackTrack = async (audioCtx, masterNode, track) => {
   };
 
   // Creating audio buffer source
-  const response = await fetch(`/sounds/${track.fileName}`);
+  const response = await fetch(`/sounds/${song}/${track.fileName}`);
   const audioArrayBuffer = await response.arrayBuffer();
   const decodedAudio = await createAsyncBufferSource(
     audioCtx,

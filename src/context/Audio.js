@@ -1,11 +1,14 @@
 // buffer source -> mute -> gain -> pan -> (track analyser) -> master gain -> splitter -> (master analyser x 2 VU) -> merger -> dest
 import React, { useState, useEffect, useRef } from "react";
 
+// Hooks
+import useQueryParam from "../hooks/useQueryParams";
+
 // Libs
 import createMasterTrack from "../libs/createMasterTrack";
 import createPlaybackTrack from "../libs/createPlaybackTrack";
 import createInputTrack from "../libs/createInputTrack";
-import { createAsyncBufferSource } from "../libs/audio";
+import { createAsyncBufferSource, exportWAV } from "../libs/audio";
 
 // Components
 import Loader from "../components/Loader";
@@ -38,7 +41,7 @@ const AudioContextProvider = ({ children }) => {
   const currentTime = useRef(0);
   const startedAt = useRef(0);
   const pausedAt = useRef(0);
-  const offset = useRef(-150);
+  const [song, setSong] = useQueryParam("song", "phoenix");
   const recording = useRef(false);
   const recordedChunks = useRef([]);
   const [masterTrack, setMasterTrack] = useState(null);
@@ -46,7 +49,6 @@ const AudioContextProvider = ({ children }) => {
   const [playing, setPlaying] = useState(false);
   const [mutedTracks, setMutedTracks] = useState([]);
   const [loadProgress, setLoadProgress] = useState(0);
-  const [audioURL, setAudioURL] = useState("");
 
   useEffect(() => {
     const onLoad = async () => {
@@ -58,8 +60,8 @@ const AudioContextProvider = ({ children }) => {
 
     onLoad();
 
-    // TODO: disable web audio context in some way ...
     return () => {
+      audioCtx && audioCtx.close();
       tracks &&
         tracks.forEach((track) => {
           if (track.recorder) {
@@ -81,14 +83,20 @@ const AudioContextProvider = ({ children }) => {
   const loadAudio = async (masterNode) => {
     let newTracks = [];
     let count = 1;
-    for (const track of config.tracks) {
-      const progress = count / config.tracks.length;
+
+    for (const track of config.songs[song].tracks) {
+      const progress = count / config.songs[song].tracks.length;
       setLoadProgress(progress);
       count++;
       if (!track) {
         return;
       }
-      const newTrack = await createPlaybackTrack(audioCtx, masterNode, track);
+      const newTrack = await createPlaybackTrack(
+        audioCtx,
+        masterNode,
+        song,
+        track
+      );
       newTracks.push(newTrack);
     }
     return newTracks;
@@ -108,7 +116,6 @@ const AudioContextProvider = ({ children }) => {
   };
 
   const getCurrentTime = () => {
-    console.log(startedAt.current);
     if (pausedAt.current) {
       currentTime.current = pausedAt.current;
       return pausedAt.current;
@@ -125,6 +132,7 @@ const AudioContextProvider = ({ children }) => {
   };
 
   const recordStart = (track) => {
+    backToStart();
     recording.current = true;
     track.recorder.startTime = audioCtx.currentTime;
     track.recorder.start();
@@ -148,6 +156,9 @@ const AudioContextProvider = ({ children }) => {
       bufferSource.buffer = decodedAudio;
 
       track.buffer = bufferSource;
+      track.type = "playback";
+      playBufferNode(track, 0);
+      pauseAll();
 
       recordedChunks.current = [];
     }, 1000);
@@ -308,7 +319,6 @@ const AudioContextProvider = ({ children }) => {
         exportAudio,
         recordStart,
         recordStop,
-        audioURL: () => audioURL,
         getCurrentTime,
       }}
     >
