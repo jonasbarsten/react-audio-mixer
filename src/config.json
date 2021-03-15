@@ -1,6 +1,7 @@
 {
   "songs": {
     "stokkmaur": {
+      "duration": 224,
       "tracks": [
         {
           "fileName": "bass.mp3",
@@ -41,6 +42,7 @@
       ]
     },
     "phoenix": {
+      "duration": 211,
       "tracks": [
         {
           "fileName": "1901_bass.mp3",

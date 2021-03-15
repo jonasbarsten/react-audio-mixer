@@ -52,7 +52,10 @@ const Controls = () => {
           className="control-item ff"
           onClick={() => audioContext.forward()}
         ></button>
-        <button className="control-item save">
+        <button
+          className="control-item save"
+          onClick={() => audioContext.exportAudio()}
+        >
           <HiOutlineSave />
         </button>
       </div>

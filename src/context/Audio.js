@@ -8,7 +8,9 @@ import useQueryParam from "../hooks/useQueryParams";
 import createMasterTrack from "../libs/createMasterTrack";
 import createPlaybackTrack from "../libs/createPlaybackTrack";
 import createInputTrack from "../libs/createInputTrack";
-import { createAsyncBufferSource, exportWAV } from "../libs/audio";
+import { createAsyncBufferSource, exportWAV, exportMP3 } from "../libs/audio";
+
+import { downloadAudioBuffer, offlineRender } from "../libs/audio-test";
 
 // Components
 import Loader from "../components/Loader";
@@ -54,7 +56,8 @@ const AudioContextProvider = ({ children }) => {
     const onLoad = async () => {
       const masterNode = createMasterNode();
       const playbackTracks = await loadAudio(masterNode);
-      const inputTracks = await createInputNode(masterNode);
+      // const inputTracks = await createInputNode(masterNode);
+      const inputTracks = [];
       setTracks([...playbackTracks, ...inputTracks]);
     };
 
@@ -128,7 +131,17 @@ const AudioContextProvider = ({ children }) => {
   };
 
   const exportAudio = () => {
-    console.log("Exporting ...");
+    let allBuffers = [];
+    tracks.forEach((track) => {
+      allBuffers.push(track.buffer.buffer);
+    });
+
+    // downloadAudioBuffer(allBuffers[0]);
+
+    // console.log(allBuffers);
+    offlineRender(tracks, config.songs[song].duration);
+    // exportWAV("audio/wav", allBuffers, allBuffers[0].length, 2);
+    // exportMP3(allBuffers);
   };
 
   const recordStart = (track) => {
@@ -213,14 +226,11 @@ const AudioContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    console.log("Booooooooooooaaaaaaaam");
     const handleKeyDown = (event) => {
-      // Space
       if (event.keyCode === 32) {
         togglePlayAll();
       }
-      // console.log(
-      //   `Key: ${event.key} with keycode ${event.keyCode} has been pressed`
-      // );
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => {

@@ -1,3 +1,5 @@
+import lamejs from "lamejs";
+
 function writeString(view, offset, string) {
   for (var i = 0; i < string.length; i++) {
     view.setUint8(offset + i, string.charCodeAt(i));
@@ -12,7 +14,10 @@ function floatTo16BitPCM(output, offset, input) {
 }
 
 function mergeBuffers(buffers, recLength) {
+  console.log(buffers);
+  console.log(recLength);
   var result = new Float32Array(recLength);
+  console.log(result);
   var offset = 0;
   for (var i = 0; i < buffers.length; i++) {
     result.set(buffers[i], offset);
@@ -23,7 +28,8 @@ function mergeBuffers(buffers, recLength) {
 
 function interleave(inputL, inputR) {
   var length = inputL.length + inputR.length;
-  var result = new Float32Array(length);
+  // var result = new Float32Array(length);
+  var result = new Int16Array(length);
 
   var index = 0,
     inputIndex = 0;
@@ -150,21 +156,119 @@ export function createBuffer(audioCtx, buffers, channelTotal) {
   return buffer;
 }
 
-export function exportWAV(type, recBuffers, recLength, numChannels) {
-  var buffers = [];
-  for (var channel = 0; channel < numChannels; channel++) {
-    buffers.push(mergeBuffers(recBuffers[channel], recLength));
-  }
-  var interleaved = undefined;
+export function exportWAV(type, allBuffers, recLength, numChannels) {
+  // var buffers = [];
+  // for (var channel = 0; channel < numChannels; channel++) {
+  //   buffers.push(mergeBuffers(allBuffers[channel], recLength));
+  // }
+  let interleaved = undefined;
   if (numChannels === 2) {
-    interleaved = interleave(buffers[0], buffers[1]);
+    interleaved = interleave(allBuffers[2], allBuffers[4]);
   } else {
-    interleaved = buffers[0];
+    interleaved = allBuffers[0];
   }
-  var dataView = encodeWAV(interleaved);
-  var audioBlob = new Blob([dataView], { type: type });
+  const dataView = encodeWAV(interleaved, numChannels, 48000);
+  const audioBlob = new Blob([dataView], { type: type });
+  console.log(audioBlob);
 
-  return audioBlob;
-
-  // self.postMessage({ command: "exportWAV", data: audioBlob });
+  forceDownload(audioBlob, "my mix.wav");
 }
+
+export function exportMP3(allBuffers) {
+  const channels = 1; //1 for mono or 2 for stereo
+  const sampleRate = 44100; //44.1khz (normal mp3 samplerate)
+  const kbps = 128; //encode 128kbps mp3
+  const mp3encoder = new lamejs.Mp3Encoder(channels, sampleRate, kbps);
+
+  const interleaved = interleave(allBuffers[2], allBuffers[4]);
+
+  const samples = interleaved; //one second of silence (get your data from the source you have)
+  const sampleBlockSize = 1152; //can be anything but make it a multiple of 576 to make encoders life easier
+
+  var mp3Data = [];
+  for (var i = 0; i < samples.length; i += sampleBlockSize) {
+    const sampleChunk = samples.subarray(i, i + sampleBlockSize);
+    var mp3buf = mp3encoder.encodeBuffer(sampleChunk);
+    if (mp3buf.length > 0) {
+      mp3Data.push(mp3buf);
+    }
+  }
+  const d = mp3encoder.flush(); //finish writing mp3
+
+  if (d.length > 0) {
+    mp3Data.push(new Int8Array(mp3buf));
+  }
+
+  const blob = new Blob(mp3Data, { type: "audio/mp3" });
+  forceDownload(blob, "test.mp3");
+}
+
+function forceDownload(blob, fileName) {
+  const url = (window.URL || window.webkitURL).createObjectURL(blob);
+  const link = window.document.createElement("a");
+  link.href = url;
+  link.download = fileName || "my mix.wav";
+  link.click();
+}
+
+// export function exportWAV(
+//   type,
+//   allBuffers,
+//   recLength,
+//   numChannels,
+//   before = 0,
+//   after = 0
+// ) {
+//   // if (!before) {
+//   //   before = 0;
+//   // }
+//   // if (!after) {
+//   //   after = 0;
+//   // }
+
+//   var channel = 0,
+//     buffers = [];
+//   for (channel = 0; channel < numChannels; channel++) {
+//     buffers.push(mergeBuffers(allBuffers[channel], recLength));
+//   }
+
+//   var i = 0,
+//     offset = 0,
+//     newbuffers = [];
+
+//   for (channel = 0; channel < numChannels; channel += 1) {
+//     offset = 0;
+//     newbuffers[channel] = new Float32Array(before + recLength + after);
+//     if (before > 0) {
+//       for (i = 0; i < before; i += 1) {
+//         newbuffers[channel].set([0], offset);
+//         offset += 1;
+//       }
+//     }
+//     newbuffers[channel].set(buffers[channel], offset);
+//     offset += buffers[channel].length;
+//     if (after > 0) {
+//       for (i = 0; i < after; i += 1) {
+//         newbuffers[channel].set([0], offset);
+//         offset += 1;
+//       }
+//     }
+//   }
+
+//   let interleaved = undefined;
+
+//   if (numChannels === 2) {
+//     interleaved = interleave(newbuffers[0], newbuffers[1]);
+//   } else {
+//     interleaved = newbuffers[0];
+//   }
+
+//   // var downsampledBuffer = downsampleBuffer(interleaved, rate);
+//   // var dataview = encodeWAV(downsampledBuffer, rate);
+//   const dataView = encodeWAV(interleaved, numChannels, 48000);
+//   var audioBlob = new Blob([dataView], { type: type });
+
+//   forceDownload(audioBlob, "my mix.wav");
+
+//   // this.postMessage(audioBlob);
+// }
