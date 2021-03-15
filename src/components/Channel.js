@@ -12,7 +12,7 @@ const Channel = ({ track = {} }) => {
   const [recording, setRecording] = useState(false);
   const [mute, setMute] = useState(track.mute);
   const [solo, setSolo] = useState(track.solo);
-  const [reverb, setReverb] = useState(false);
+  const [delay, setDelay] = useState(false);
 
   const style = track.type === "input" ? { backgroundColor: "white" } : {};
 
@@ -54,10 +54,10 @@ const Channel = ({ track = {} }) => {
           S
         </button>
         <button
-          className={`btn afl ${reverb ? "active" : ""}`}
-          onClick={() => setReverb(!reverb)}
+          className={`btn afl ${delay ? "active" : ""}`}
+          onClick={() => setDelay(!delay)}
         >
-          REV
+          DELAY
         </button>
         <Panner pannerNode={track.pannerNode} />
         <Track gainNode={track.gainNode} audioNode={track.audioNode} />

@@ -1,6 +1,11 @@
+TODO:
+
+Space = play / pause
+Solo = unique
+
 # demo:
 
-http://react-audio-mixer.s3-website-eu-west-1.amazonaws.com/
+https://d32p0rv4tdmjoq.cloudfront.net?song=phoenix
 
 # react audio mixer
 

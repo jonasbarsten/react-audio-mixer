@@ -212,6 +212,22 @@ const AudioContextProvider = ({ children }) => {
     }
   };
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      // Space
+      if (event.keyCode === 32) {
+        togglePlayAll();
+      }
+      // console.log(
+      //   `Key: ${event.key} with keycode ${event.keyCode} has been pressed`
+      // );
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [togglePlayAll]);
+
   // TODO: implement with buffer
   const rewind = () => {
     let newTime = currentTime.current - 5; // One second
