@@ -131,6 +131,7 @@ function createAudioData(audioBuffer, asFloat) {
 // WAV file is produced.
 export function downloadAudioBuffer(
   audioBuffer,
+  progress,
   filename = "noname.wav",
   asFloat = true
 ) {
@@ -141,9 +142,12 @@ export function downloadAudioBuffer(
   const blob = new Blob([wavData], { type: "audio/wav" });
 
   forceDownload(blob, filename);
+
+  // Remove export progress and show mixer
+  progress(null);
 }
 
-export function offlineRender(tracks, duration) {
+export function offlineRender(tracks, duration, progress, progressStage) {
   // Offline rendering has its own context, so we have to rebuild all the nodes for that context
   const offlineCtx = new (window.OfflineAudioContext ||
     window.webkitOfflineAudioContext)(2, 44100 * duration, 44100);
@@ -160,7 +164,7 @@ export function offlineRender(tracks, duration) {
       pannerNode.pan.value = track.pannerNode.pan.value;
     } else {
       // Support for Safari
-      const pan = track.pannerNode.positionX.value;
+      const pan = track.etc.panValue;
       pannerNode = offlineCtx.createPanner();
       pannerNode.panningModel = "equalpower";
       pannerNode.setPosition(pan, 0, 1 - Math.abs(pan));
@@ -183,11 +187,30 @@ export function offlineRender(tracks, duration) {
   });
 
   offlineCtx.startRendering();
-  offlineCtx.oncomplete = function (e) {
-    downloadAudioBuffer(e.renderedBuffer);
-    // e.renderedBuffer contains the output buffer
-    console.log("LALALA");
-    // console.log(e);
+
+  let progressId;
+
+  progressStage("Rendering ...");
+
+  const reportProgress = () => {
+    const currentTime = offlineCtx.currentTime;
+    progress(currentTime / duration);
+    progressId = requestAnimationFrame(reportProgress);
+  };
+
+  progressId = requestAnimationFrame(reportProgress);
+
+  offlineCtx.oncomplete = (e) => {
+    progress(1);
+    // progressStage("Done rendering!");
+    progressStage("Converting ...");
+    // TODO: report progress on the rest ...
+    // Allowing progress to reach 100% before blocking the render thread ...
+    // TODO: do this better ...
+    setTimeout(() => {
+      cancelAnimationFrame(progressId);
+      downloadAudioBuffer(e.renderedBuffer, progress);
+    }, 1000);
   };
 }
 

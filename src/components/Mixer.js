@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext } from "react";
 
 import Channel from "./Channel";
 import Track from "./Track";
@@ -9,6 +9,7 @@ import { AudioContext } from "../context/Audio";
 const Mixer = () => {
   const audioContext = useContext(AudioContext);
   const tracks = audioContext.getTracks();
+  const playing = audioContext.playing();
   return (
     <div id="mixer">
       {tracks &&
@@ -18,8 +19,8 @@ const Mixer = () => {
         })}
 
       <div id="meters">
-        <Vu channel="left" master={true} />
-        <Vu channel="right" master={true} />
+        <Vu channel="left" master={true} playing={playing} />
+        <Vu channel="right" master={true} playing={playing} />
       </div>
 
       <div id="master">

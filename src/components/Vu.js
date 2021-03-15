@@ -7,8 +7,8 @@ const nodeMap = {
   right: "analyserNodeR",
 };
 
-const Vu = (props) => {
-  const analyserNodeName = nodeMap[props.channel];
+const Vu = ({ channel, playing }) => {
+  const analyserNodeName = nodeMap[channel];
   const [deg, setDeg] = useState(0);
   const animationRef = useRef(null);
   const audioContext = useContext(AudioContext);
@@ -18,6 +18,7 @@ const Vu = (props) => {
   let vuData = [];
 
   const animate = () => {
+    console.log("Animate!!");
     const len = animationData.current.length;
     let newDbfs = new Array(len);
 
@@ -48,15 +49,24 @@ const Vu = (props) => {
   };
 
   useEffect(() => {
+    console.log("BAM");
+    console.log(playing);
+    if (!playing) {
+      console.log("Stop!");
+      cancelAnimationFrame(animationRef.current);
+
+      setDeg(0);
+      return;
+    }
     animationRef.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animationRef.current);
-  }, []);
+  }, [playing]);
 
   return (
     <div className="vu">
       <div className="mask">
         <div
-          className={`needle ${props.channel}`}
+          className={`needle ${channel}`}
           style={{
             WebkitTransform: `rotate(${deg}deg)`,
             MozTransform: `rotate(${deg}deg)`,
@@ -64,7 +74,7 @@ const Vu = (props) => {
           }}
         ></div>
       </div>
-      <p className="vu-label">{props.channel[0].toUpperCase()}</p>
+      <p className="vu-label">{channel[0].toUpperCase()}</p>
     </div>
   );
 };

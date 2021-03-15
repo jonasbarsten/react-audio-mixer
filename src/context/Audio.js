@@ -8,9 +8,8 @@ import useQueryParam from "../hooks/useQueryParams";
 import createMasterTrack from "../libs/createMasterTrack";
 import createPlaybackTrack from "../libs/createPlaybackTrack";
 import createInputTrack from "../libs/createInputTrack";
-import { createAsyncBufferSource, exportWAV, exportMP3 } from "../libs/audio";
-
-import { downloadAudioBuffer, offlineRender } from "../libs/audio-test";
+import { createAsyncBufferSource } from "../libs/audio";
+import { offlineRender } from "../libs/audio-export";
 
 // Components
 import Loader from "../components/Loader";
@@ -18,40 +17,34 @@ import Loader from "../components/Loader";
 // Config
 import config from "../config.json";
 
-let audioCtx = null;
+let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-try {
-  window.AudioContext =
-    window.AudioContext ||
-    window.webkitAudioContext ||
-    window.mozAudioContext ||
-    window.msAudioContext;
-  navigator.getUserMedia =
-    navigator.getUserMedia ||
-    navigator.webkitGetUserMedia ||
-    navigator.mozGetUserMedia ||
-    navigator.msGetUserMedia;
-  window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
-  audioCtx = new window.AudioContext();
-} catch (e) {
-  window.alert("Your browser does not support WebAudio, try Google Chrome");
-}
+if (!audioCtx.createGain) audioCtx.createGain = audioCtx.createGainNode;
+if (!audioCtx.createDelay) audioCtx.createDelay = audioCtx.createDelayNode;
+if (!audioCtx.createScriptProcessor)
+  audioCtx.createScriptProcessor = audioCtx.createJavaScriptNode;
 
 export const AudioContext = React.createContext();
 
 const AudioContextProvider = ({ children }) => {
+  // Refs
   const currentTime = useRef(0);
   const startedAt = useRef(0);
   const pausedAt = useRef(0);
-  const [song, setSong] = useQueryParam("song", "phoenix");
   const recording = useRef(false);
   const recordedChunks = useRef([]);
+
+  // State
+  const [song, setSong] = useQueryParam("song", "phoenix");
   const [masterTrack, setMasterTrack] = useState(null);
   const [tracks, setTracks] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [mutedTracks, setMutedTracks] = useState([]);
   const [loadProgress, setLoadProgress] = useState(0);
+  const [exportProgress, setExportProgress] = useState(0);
+  const [exportProgressStage, setExportProgressStage] = useState("");
 
+  // Use effect (except keydown)
   useEffect(() => {
     const onLoad = async () => {
       const masterNode = createMasterNode();
@@ -77,6 +70,7 @@ const AudioContextProvider = ({ children }) => {
     };
   }, []);
 
+  // Functions
   const createMasterNode = () => {
     const masterNode = createMasterTrack(audioCtx);
     setMasterTrack(masterNode);
@@ -123,11 +117,8 @@ const AudioContextProvider = ({ children }) => {
       currentTime.current = pausedAt.current;
       return pausedAt.current;
     }
-    // if (startedAt.current) {
     currentTime.current = audioCtx.currentTime - startedAt.current;
     return audioCtx.currentTime - startedAt.current;
-    // }
-    // return 0;
   };
 
   const exportAudio = () => {
@@ -136,12 +127,15 @@ const AudioContextProvider = ({ children }) => {
       allBuffers.push(track.buffer.buffer);
     });
 
-    // downloadAudioBuffer(allBuffers[0]);
+    const progress = (data) => {
+      setExportProgress(data);
+    };
 
-    // console.log(allBuffers);
-    offlineRender(tracks, config.songs[song].duration);
-    // exportWAV("audio/wav", allBuffers, allBuffers[0].length, 2);
-    // exportMP3(allBuffers);
+    const progressStage = (data) => {
+      setExportProgressStage(data);
+    };
+
+    offlineRender(tracks, config.songs[song].duration, progress, progressStage);
   };
 
   const recordStart = (track) => {
@@ -154,7 +148,6 @@ const AudioContextProvider = ({ children }) => {
   const recordStop = async (track) => {
     recording.current = false;
     track.recorder.stop();
-    console.log(recordedChunks.current);
 
     setTimeout(async () => {
       const blob = new Blob(recordedChunks.current, {
@@ -226,7 +219,6 @@ const AudioContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    console.log("Booooooooooooaaaaaaaam");
     const handleKeyDown = (event) => {
       if (event.keyCode === 32) {
         togglePlayAll();
@@ -328,6 +320,19 @@ const AudioContextProvider = ({ children }) => {
     });
   };
 
+  const toggleDelay = (track, delay) => {
+    if (delay) {
+      track.pannerNode
+        .connect(track.convolverNode)
+        .connect(masterTrack.gainNode);
+    } else {
+      track.pannerNode.connect(masterTrack.gainNode);
+      track.convolverNode.disconnect(masterTrack.gainNode);
+    }
+  };
+
+  // TODO: export could be done in parallel with mixing ...
+
   return (
     <AudioContext.Provider
       value={{
@@ -347,12 +352,15 @@ const AudioContextProvider = ({ children }) => {
         recordStop,
         getCurrentTime,
         song: () => song,
+        toggleDelay,
       }}
     >
-      {tracks && tracks.length > 0 ? (
-        children
+      {exportProgress ? (
+        <Loader progress={exportProgress} text={exportProgressStage} />
+      ) : !tracks || tracks.length < 1 ? (
+        <Loader progress={loadProgress} text="Loading Audio Assets..." />
       ) : (
-        <Loader progress={loadProgress} />
+        children
       )}
     </AudioContext.Provider>
   );

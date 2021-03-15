@@ -24,6 +24,8 @@ https://videohive.net/item/audio-react-analog-vu-meter/5467966?ref=DEM-G&fbclid=
 https://medium.com/creative-technology-concepts-code/recording-syncing-and-exporting-web-audio-1e1a1e35ef08
 https://jsfiddle.net/kmturley/n5atqwhm/
 
+https://webaudioapi.com/
+
 DAW:
 https://awesomeopensource.com/project/naomiaro/waveform-playlist
 

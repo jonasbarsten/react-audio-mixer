@@ -20,8 +20,9 @@ const Panner = (props) => {
     } else {
       // Safari
       props.pannerNode.setPosition(pan, 0, 1 - Math.abs(pan));
+      props.etc.panValue = pan;
     }
-  }, [pan, props.pannerNode]);
+  }, [pan, props.pannerNode, props.etc]);
 
   const handleDrag = (e) => {
     if (!pannerCanDrag) {

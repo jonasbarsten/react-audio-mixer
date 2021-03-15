@@ -7,7 +7,7 @@ import { scale } from "../utils";
 
 import "./Fader.scss";
 
-const Fader = (props) => {
+const Fader = ({ master, gainNode }) => {
   const [position, setPosition] = useState(-171);
   const audioContext = useContext(AudioContext);
 
@@ -19,23 +19,23 @@ const Fader = (props) => {
     const scaled = data.y + 200;
     const gain = Math.pow(scale(scaled, 0, max, 1.15, 0), 2);
 
-    if (props.master) {
+    if (master) {
       audioContext.setMasterGain(gain);
     } else {
-      props.gainNode.gain.value = gain;
+      gainNode.gain.value = gain;
     }
   };
 
   const resetFader = () => {
-    if (props.master) {
+    if (master) {
       audioContext.setMasterGain(1);
     } else {
-      props.gainNode.gain.value = 1;
+      gainNode.gain.value = 1;
     }
     setPosition(-171);
   };
 
-  const max = props.master ? 314 : 220;
+  const max = master ? 314 : 220;
 
   return (
     <Draggable

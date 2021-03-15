@@ -26,6 +26,11 @@ const Channel = ({ track = {} }) => {
     setSolo(!solo);
   };
 
+  const toggleDelay = () => {
+    audioContext.toggleDelay(track, !delay);
+    setDelay(!delay);
+  };
+
   const toggleRecording = () => {
     if (recording) {
       audioContext.recordStop(track);
@@ -35,6 +40,8 @@ const Channel = ({ track = {} }) => {
       setRecording(true);
     }
   };
+
+  console.log(track);
 
   const recordingClass = recording ? " recording" : " record";
 
@@ -55,12 +62,17 @@ const Channel = ({ track = {} }) => {
         </button>
         <button
           className={`btn afl ${delay ? "active" : ""}`}
-          onClick={() => setDelay(!delay)}
+          onClick={toggleDelay}
         >
           DELAY
         </button>
-        <Panner pannerNode={track.pannerNode} />
-        <Track gainNode={track.gainNode} audioNode={track.audioNode} />
+        <Panner pannerNode={track.pannerNode} etc={track.etc} />
+        <Track
+          gainNode={track.gainNode}
+          // audioNode={track.audioNode}
+          // analyserNode={track.analyserNode}
+          meterValue={track.meterValue}
+        />
         {track.type === "input" ? (
           <p className={`label${recordingClass}`} onClick={toggleRecording}>
             Record

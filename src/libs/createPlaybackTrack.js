@@ -25,6 +25,17 @@ const createPlaybackTrack = async (audioCtx, masterNode, song, track) => {
   const gainNode = audioCtx.createGain();
   const muteNode = audioCtx.createGain();
   // const analyserNode = audioCtx.createAnalyser();
+  // const bufferLength = analyserNode.fftSize;
+  // const animationData = new Uint8Array(bufferLength);
+  const convolverNode = audioCtx.createConvolver();
+  const convolverResponse = await fetch("/sounds/effects/echo.wav");
+  const convolverAudioArrayBuffer = await convolverResponse.arrayBuffer();
+  const convolverDecodedAudio = await createAsyncBufferSource(
+    audioCtx,
+    convolverAudioArrayBuffer
+  );
+  convolverNode.buffer = convolverDecodedAudio;
+
   let pannerNode;
 
   // Support for Safari and iOS
@@ -41,14 +52,20 @@ const createPlaybackTrack = async (audioCtx, masterNode, song, track) => {
   newTrack.buffer = bufferSource;
   newTrack.gainNode = gainNode;
   newTrack.muteNode = muteNode;
+  newTrack.convolverNode = convolverNode;
   newTrack.pannerNode = pannerNode;
+  newTrack.etc = { panValue: 0 };
   // newTrack.analyserNode = analyserNode;
+  // newTrack.animationData = animationData;
+  // newTrack.meterData = [];
+  // newTrack.meterValue = 0;
 
   // Connecting the nodes and connecting it to the master gain node
   bufferSource
     .connect(muteNode)
     .connect(gainNode)
     .connect(pannerNode)
+    // .connect(convolverNode)
     // .connect(analyserNode)
     .connect(masterNode.gainNode);
 
