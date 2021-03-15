@@ -15,8 +15,12 @@ const Panner = (props) => {
   });
 
   useEffect(() => {
-    props.pannerNode.pan.value = pan;
-  }, [pan, props.pannerNode.pan]);
+    if (props.pannerNode.pan) {
+      props.pannerNode.pan.value = pan;
+    } else {
+      props.pannerNode.setPosition(0, 0, 1 - Math.abs(pan));
+    }
+  }, [pan, props.pannerNode]);
 
   const handleDrag = (e) => {
     if (!pannerCanDrag) {
