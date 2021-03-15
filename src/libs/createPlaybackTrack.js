@@ -24,7 +24,7 @@ const createPlaybackTrack = async (audioCtx, masterNode, song, track) => {
   // Creating audio, gain, analyser and panner nodes
   const gainNode = audioCtx.createGain();
   const muteNode = audioCtx.createGain();
-  const analyserNode = audioCtx.createAnalyser();
+  // const analyserNode = audioCtx.createAnalyser();
   let pannerNode;
 
   // Support for Safari and iOS
@@ -42,14 +42,14 @@ const createPlaybackTrack = async (audioCtx, masterNode, song, track) => {
   newTrack.gainNode = gainNode;
   newTrack.muteNode = muteNode;
   newTrack.pannerNode = pannerNode;
-  newTrack.analyserNode = analyserNode;
+  // newTrack.analyserNode = analyserNode;
 
   // Connecting the nodes and connecting it to the master gain node
   bufferSource
     .connect(muteNode)
     .connect(gainNode)
     .connect(pannerNode)
-    .connect(analyserNode)
+    // .connect(analyserNode)
     .connect(masterNode.gainNode);
 
   return newTrack;

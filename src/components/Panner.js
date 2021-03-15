@@ -19,7 +19,7 @@ const Panner = (props) => {
       props.pannerNode.pan.value = pan;
     } else {
       // Safari
-      props.pannerNode.setPosition(0, 0, 1 - Math.abs(pan));
+      props.pannerNode.setPosition(pan, 0, 1 - Math.abs(pan));
     }
   }, [pan, props.pannerNode]);
 

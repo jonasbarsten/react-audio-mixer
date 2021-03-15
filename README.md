@@ -2,6 +2,11 @@ TODO:
 
 Read this: https://dmitripavlutin.com/dont-overuse-react-usecallback/
 Solo = unique
+Fix meter on iOS
+
+# iOS:
+
+Remember to turn off "do not disturb" aka vibrate mode ...
 
 # demo:
 

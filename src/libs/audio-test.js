@@ -144,14 +144,41 @@ export function downloadAudioBuffer(
 }
 
 export function offlineRender(tracks, duration) {
+  // Offline rendering has its own context, so we have to rebuild all the nodes for that context
   const offlineCtx = new (window.OfflineAudioContext ||
     window.webkitOfflineAudioContext)(2, 44100 * duration, 44100);
-  console.log("Boooom");
 
   tracks.forEach((track) => {
     const bufferSource = offlineCtx.createBufferSource();
     bufferSource.buffer = track.decodedAudio;
-    bufferSource.connect(offlineCtx.destination);
+    const gainNode = offlineCtx.createGain();
+    const muteNode = offlineCtx.createGain();
+    let pannerNode;
+
+    if (offlineCtx.createStereoPanner) {
+      pannerNode = offlineCtx.createStereoPanner();
+      pannerNode.pan.value = track.pannerNode.pan.value;
+    } else {
+      // Support for Safari
+      const pan = track.pannerNode.positionX.value;
+      pannerNode = offlineCtx.createPanner();
+      pannerNode.panningModel = "equalpower";
+      pannerNode.setPosition(pan, 0, 1 - Math.abs(pan));
+    }
+
+    gainNode.gain.value = track.gainNode.gain.value;
+    muteNode.gain.value = track.muteNode.gain.value;
+
+    bufferSource
+      .connect(muteNode)
+      .connect(gainNode)
+      .connect(pannerNode)
+      // .connect(analyserNode)
+      // .connect(masterNode.gainNode);
+      .connect(offlineCtx.destination);
+
+    // bufferSource.connect(offlineCtx.destination);
+    // Have to start these for rendering to work
     bufferSource.start();
   });
 
