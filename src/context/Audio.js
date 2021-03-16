@@ -1,4 +1,6 @@
 // buffer source -> mute -> gain -> pan -> (track analyser) -> master gain -> splitter -> (master analyser x 2 VU) -> merger -> dest
+// TODO: export could be done in parallel with mixing ...
+
 import React, { useState, useEffect, useRef } from "react";
 
 // Hooks
@@ -122,25 +124,11 @@ const AudioContextProvider = ({ children }) => {
   };
 
   const exportAudio = () => {
-    let allBuffers = [];
-    tracks.forEach((track) => {
-      allBuffers.push(track.buffer.buffer);
-    });
-
     const mixName = prompt("Name your mix");
-
-    console.log(mixName);
-
-    // const progress = (data) => {
-    //   setExportProgress(data);
-    // };
-
-    // const progressStage = (data) => {
-    //   setExportProgressStage(data);
-    // };
 
     offlineRender(
       tracks,
+      masterTrack,
       config.songs[song].duration,
       (data) => setExportProgress(data),
       (data) => setExportProgressStage(data),
@@ -318,10 +306,12 @@ const AudioContextProvider = ({ children }) => {
         if (mute) {
           track.muteNode.gain.value = 0;
           setMutedTracks([...mutedTracks, track.id]);
+          track.mute = true;
         }
 
         if (!mute) {
           track.muteNode.gain.value = 1;
+          track.mute = false;
           const newMutedTracks = [...mutedTracks].filter((trackId) => {
             return trackId !== id;
           });
@@ -333,16 +323,18 @@ const AudioContextProvider = ({ children }) => {
 
   const toggleDelay = (track, delay) => {
     if (delay) {
+      // Parallel processing
       track.pannerNode
         .connect(track.convolverNode)
         .connect(masterTrack.gainNode);
+      track.delay = true;
     } else {
-      track.pannerNode.connect(masterTrack.gainNode);
+      track.pannerNode.disconnect(track.convolverNode);
       track.convolverNode.disconnect(masterTrack.gainNode);
+      track.pannerNode.connect(masterTrack.gainNode);
+      track.delay = false;
     }
   };
-
-  // TODO: export could be done in parallel with mixing ...
 
   return (
     <AudioContext.Provider

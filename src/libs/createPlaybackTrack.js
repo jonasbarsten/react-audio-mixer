@@ -9,6 +9,7 @@ const createPlaybackTrack = async (audioCtx, masterNode, song, track) => {
     type: "playback",
     solo: false,
     mute: false,
+    delay: false,
   };
 
   // Creating audio buffer source

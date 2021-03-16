@@ -49,12 +49,8 @@ const Vu = ({ channel, playing }) => {
   };
 
   useEffect(() => {
-    console.log("BAM");
-    console.log(playing);
     if (!playing) {
-      console.log("Stop!");
       cancelAnimationFrame(animationRef.current);
-
       setDeg(0);
       return;
     }

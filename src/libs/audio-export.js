@@ -2,6 +2,8 @@
 // when using Chrome testRunner, and for downloading an AudioBuffer as
 // a float WAV file when running in a browser.
 
+import { createAsyncBufferSource } from "./audio";
+
 function writeString(s, a, offset) {
   for (let i = 0; i < s.length; ++i) {
     a[offset + i] = s.charCodeAt(i);
@@ -147,8 +149,9 @@ export function downloadAudioBuffer(
   progress(null);
 }
 
-export function offlineRender(
+export async function offlineRender(
   tracks,
+  masterTrack,
   duration,
   progress,
   progressStage,
@@ -158,11 +161,16 @@ export function offlineRender(
   const offlineCtx = new (window.OfflineAudioContext ||
     window.webkitOfflineAudioContext)(2, 44100 * duration, 44100);
 
-  tracks.forEach((track) => {
+  const masterGainNode = offlineCtx.createGain();
+  masterGainNode.gain.value = masterTrack.gainNode.gain.value;
+  masterGainNode.connect(offlineCtx.destination);
+
+  for (const track of tracks) {
     const bufferSource = offlineCtx.createBufferSource();
     bufferSource.buffer = track.decodedAudio;
     const gainNode = offlineCtx.createGain();
     const muteNode = offlineCtx.createGain();
+    const convolverNode = track.delay ? offlineCtx.createConvolver() : null;
     let pannerNode;
 
     if (offlineCtx.createStereoPanner) {
@@ -179,18 +187,36 @@ export function offlineRender(
     gainNode.gain.value = track.gainNode.gain.value;
     muteNode.gain.value = track.muteNode.gain.value;
 
-    bufferSource
-      .connect(muteNode)
-      .connect(gainNode)
-      .connect(pannerNode)
-      // .connect(analyserNode)
-      // .connect(masterNode.gainNode);
-      .connect(offlineCtx.destination);
+    if (convolverNode) {
+      const convolverResponse = await fetch("/sounds/effects/echo.wav");
+      const convolverAudioArrayBuffer = await convolverResponse.arrayBuffer();
+      const convolverDecodedAudio = await createAsyncBufferSource(
+        offlineCtx,
+        convolverAudioArrayBuffer
+      );
+      convolverNode.buffer = convolverDecodedAudio;
+      bufferSource
+        .connect(muteNode)
+        .connect(gainNode)
+        .connect(pannerNode)
+        .connect(masterGainNode);
+
+      // Parallel processing
+      pannerNode.connect(convolverNode).connect(masterGainNode);
+
+      // convolverNode.start();
+    } else {
+      bufferSource
+        .connect(muteNode)
+        .connect(gainNode)
+        .connect(pannerNode)
+        .connect(masterGainNode);
+    }
 
     // bufferSource.connect(offlineCtx.destination);
     // Have to start these for rendering to work
     bufferSource.start();
-  });
+  }
 
   offlineCtx.startRendering();
 

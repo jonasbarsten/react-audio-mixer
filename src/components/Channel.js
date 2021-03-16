@@ -12,7 +12,7 @@ const Channel = ({ track = {} }) => {
   const [recording, setRecording] = useState(false);
   const [mute, setMute] = useState(track.mute);
   const [solo, setSolo] = useState(track.solo);
-  const [delay, setDelay] = useState(false);
+  const [delay, setDelay] = useState(track.delay);
 
   const style = track.type === "input" ? { backgroundColor: "white" } : {};
 
@@ -40,8 +40,6 @@ const Channel = ({ track = {} }) => {
       setRecording(true);
     }
   };
-
-  console.log(track);
 
   const recordingClass = recording ? " recording" : " record";
 
