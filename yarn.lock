@@ -11722,6 +11722,11 @@
   dependencies:
     "minimalistic-assert" "^1.0.0"
 
+"web-audio-peak-meter@^2.0.1":
+  "integrity" "sha512-6Y0Xc/c9KEzC+QhNRGjqcEUAatSC7ydXptk3iUYZQLppxLeWqGFpmySOVbAHjxqSkW5i5rNcRs7mi3nw2tFnHA=="
+  "resolved" "https://registry.npmjs.org/web-audio-peak-meter/-/web-audio-peak-meter-2.0.1.tgz"
+  "version" "2.0.1"
+
 "web-vitals@^1.1.1":
   "integrity" "sha512-jYOaqu01Ny1NvMwJ3dBJDUOJ2PGWknZWH4AUnvFOscvbdHMERIKT2TlgiAey5rVyfOePG7so2JcXXZdSnBvioQ=="
   "resolved" "https://registry.npmjs.org/web-vitals/-/web-vitals-1.1.1.tgz"

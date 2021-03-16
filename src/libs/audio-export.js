@@ -213,7 +213,6 @@ export async function offlineRender(
         .connect(masterGainNode);
     }
 
-    // bufferSource.connect(offlineCtx.destination);
     // Have to start these for rendering to work
     bufferSource.start();
   }
@@ -234,7 +233,6 @@ export async function offlineRender(
 
   offlineCtx.oncomplete = (e) => {
     progress(1);
-    // progressStage("Done rendering!");
     progressStage("Converting ...");
     // TODO: report progress on the rest ...
     // Allowing progress to reach 100% before blocking the render thread ...

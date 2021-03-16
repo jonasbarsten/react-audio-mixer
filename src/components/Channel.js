@@ -9,7 +9,6 @@ import "./Channel.scss";
 
 const Channel = ({ track = {} }) => {
   const audioContext = useContext(AudioContext);
-  const [recording, setRecording] = useState(false);
   const [mute, setMute] = useState(track.mute);
   const [solo, setSolo] = useState(track.solo);
   const [delay, setDelay] = useState(track.delay);
@@ -30,18 +29,6 @@ const Channel = ({ track = {} }) => {
     audioContext.toggleDelay(track, !delay);
     setDelay(!delay);
   };
-
-  // const toggleRecording = () => {
-  //   if (recording) {
-  //     audioContext.recordStop(track);
-  //     setRecording(false);
-  //   } else {
-  //     audioContext.recordStart(track);
-  //     setRecording(true);
-  //   }
-  // };
-
-  const recordingClass = recording ? " recording" : " record";
 
   return (
     <div className="channel" style={style}>
@@ -65,17 +52,8 @@ const Channel = ({ track = {} }) => {
           DELAY
         </button>
         <Panner pannerNode={track.pannerNode} etc={track.etc} />
-        <Track
-          gainNode={track.gainNode}
-          // audioNode={track.audioNode}
-          // analyserNode={track.analyserNode}
-          meterValue={track.meterValue}
-        />
-        {track.type === "input" ? (
-          <p className={`label${recordingClass}`}>Record</p>
-        ) : (
-          <p className="label">{track.name}</p>
-        )}
+        <Track gainNode={track.gainNode} meterValue={track.meterValue} />
+        <p className="label">{track.name}</p>
       </div>
     </div>
   );

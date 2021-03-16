@@ -16,10 +16,8 @@ const App = () => {
         <div className="App">
           <Header />
           <Home />
-          {/* <TestComponent /> */}
         </div>
       </AudioContextProvider>
-      {/* <div id="audio-container"></div> */}
     </>
   );
 };

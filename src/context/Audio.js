@@ -10,8 +10,6 @@ import useQueryParam from "../hooks/useQueryParams";
 // Libs
 import createMasterTrack from "../libs/createMasterTrack";
 import createPlaybackTrack from "../libs/createPlaybackTrack";
-// import createInputTrack from "../libs/createInputTrack";
-import { createAsyncBufferSource, getAsyncInputStream } from "../libs/audio";
 import { offlineRender } from "../libs/audio-export";
 
 // Components
@@ -35,7 +33,6 @@ const AudioContextProvider = ({ children }) => {
   const startedAt = useRef(0);
   const pausedAt = useRef(0);
   const recording = useRef(false);
-  const recordedChunks = useRef([]);
   const recorder = useRef(null);
 
   // State
@@ -53,7 +50,6 @@ const AudioContextProvider = ({ children }) => {
     const onLoad = async () => {
       const masterNode = createMasterNode();
       const playbackTracks = await loadAudio(masterNode);
-      // const inputTracks = await createInputNode(masterNode);
       const inputTracks = [];
       setTracks([...playbackTracks, ...inputTracks]);
     };
@@ -62,15 +58,6 @@ const AudioContextProvider = ({ children }) => {
 
     return () => {
       audioCtx && audioCtx.close();
-      // tracks &&
-      //   tracks.forEach((track) => {
-      //     if (track.recorder) {
-      //       track.recorder.removeEventListener(
-      //         "dataavailable",
-      //         handleRecordedData
-      //       );
-      //     }
-      //   });
     };
   }, []);
 
@@ -102,18 +89,6 @@ const AudioContextProvider = ({ children }) => {
     }
     return newTracks;
   };
-
-  // const createInputNode = async (masterNode) => {
-  //   const newInputTrack = await createInputTrack(audioCtx, masterNode);
-  //   setMutedTracks([...mutedTracks, newInputTrack.id]);
-
-  //   newInputTrack.recorder.addEventListener(
-  //     "dataavailable",
-  //     handleRecordedData
-  //   );
-
-  //   return [newInputTrack];
-  // };
 
   const getCurrentTime = () => {
     if (pausedAt.current) {
@@ -371,10 +346,8 @@ const AudioContextProvider = ({ children }) => {
 
   const toggleRecord = (record) => {
     if (record) {
-      console.log("Should start ...");
       recordStart();
     } else {
-      console.log("Should stop ...");
       recordStop();
     }
   };
@@ -394,13 +367,10 @@ const AudioContextProvider = ({ children }) => {
         rewind,
         forward,
         exportAudio,
-        recordStart,
-        recordStop,
         getCurrentTime,
         song: () => song,
         toggleDelay,
         toggleRecord,
-        recording: () => recording.current,
       }}
     >
       {exportProgress ? (
