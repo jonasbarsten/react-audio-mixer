@@ -18,7 +18,6 @@ const Vu = ({ channel, playing }) => {
   let vuData = [];
 
   const animate = () => {
-    console.log("Animate!!");
     const len = animationData.current.length;
     let newDbfs = new Array(len);
 

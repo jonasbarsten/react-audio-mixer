@@ -2,6 +2,7 @@
 // TODO: export could be done in parallel with mixing ...
 
 import React, { useState, useEffect, useRef } from "react";
+import { RecordRTCPromisesHandler } from "recordrtc";
 
 // Hooks
 import useQueryParam from "../hooks/useQueryParams";
@@ -9,8 +10,8 @@ import useQueryParam from "../hooks/useQueryParams";
 // Libs
 import createMasterTrack from "../libs/createMasterTrack";
 import createPlaybackTrack from "../libs/createPlaybackTrack";
-import createInputTrack from "../libs/createInputTrack";
-import { createAsyncBufferSource } from "../libs/audio";
+// import createInputTrack from "../libs/createInputTrack";
+import { createAsyncBufferSource, getAsyncInputStream } from "../libs/audio";
 import { offlineRender } from "../libs/audio-export";
 
 // Components
@@ -35,6 +36,7 @@ const AudioContextProvider = ({ children }) => {
   const pausedAt = useRef(0);
   const recording = useRef(false);
   const recordedChunks = useRef([]);
+  const recorder = useRef(null);
 
   // State
   const [song, setSong] = useQueryParam("song", "phoenix");
@@ -60,15 +62,15 @@ const AudioContextProvider = ({ children }) => {
 
     return () => {
       audioCtx && audioCtx.close();
-      tracks &&
-        tracks.forEach((track) => {
-          if (track.recorder) {
-            track.recorder.removeEventListener(
-              "dataavailable",
-              handleRecordedData
-            );
-          }
-        });
+      // tracks &&
+      //   tracks.forEach((track) => {
+      //     if (track.recorder) {
+      //       track.recorder.removeEventListener(
+      //         "dataavailable",
+      //         handleRecordedData
+      //       );
+      //     }
+      //   });
     };
   }, []);
 
@@ -99,20 +101,19 @@ const AudioContextProvider = ({ children }) => {
       newTracks.push(newTrack);
     }
     return newTracks;
-    // createInputNode(masterNode, newTracks);
   };
 
-  const createInputNode = async (masterNode) => {
-    const newInputTrack = await createInputTrack(audioCtx, masterNode);
-    setMutedTracks([...mutedTracks, newInputTrack.id]);
+  // const createInputNode = async (masterNode) => {
+  //   const newInputTrack = await createInputTrack(audioCtx, masterNode);
+  //   setMutedTracks([...mutedTracks, newInputTrack.id]);
 
-    newInputTrack.recorder.addEventListener(
-      "dataavailable",
-      handleRecordedData
-    );
+  //   newInputTrack.recorder.addEventListener(
+  //     "dataavailable",
+  //     handleRecordedData
+  //   );
 
-    return [newInputTrack];
-  };
+  //   return [newInputTrack];
+  // };
 
   const getCurrentTime = () => {
     if (pausedAt.current) {
@@ -136,45 +137,77 @@ const AudioContextProvider = ({ children }) => {
     );
   };
 
-  const recordStart = (track) => {
-    backToStart();
-    recording.current = true;
-    track.recorder.startTime = audioCtx.currentTime;
-    track.recorder.start();
-  };
-
-  const recordStop = async (track) => {
-    recording.current = false;
-    track.recorder.stop();
-
-    // TODO: there has to be a better way ...
-    setTimeout(async () => {
-      const blob = new Blob(recordedChunks.current, {
-        type: "audio/ogg; codecs=opus",
-      });
-      const audioArrayBuffer = await blob.arrayBuffer();
-      const decodedAudio = await createAsyncBufferSource(
-        audioCtx,
-        audioArrayBuffer
-      );
-      const bufferSource = audioCtx.createBufferSource();
-      bufferSource.buffer = decodedAudio;
-
-      track.buffer = bufferSource;
-      track.type = "playback";
-      playBufferNode(track, 0);
+  const recordStart = async () => {
+    if (playing) {
       pauseAll();
+    }
 
-      recordedChunks.current = [];
-    }, 1000);
+    if (pausedAt.current !== 0 || startedAt.current !== 0) {
+      backToStart();
+    }
+
+    let newRecorder = recorder.current;
+
+    if (!newRecorder) {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+      });
+      newRecorder = new RecordRTCPromisesHandler(stream, {
+        type: "audio",
+      });
+    }
+
+    newRecorder.startRecording();
+    playAll();
+    recorder.current = newRecorder;
+    recording.current = true;
   };
 
-  const handleRecordedData = async (e) => {
-    const allChunks = [...recordedChunks.current, e.data];
-    recordedChunks.current = allChunks;
+  const recordStop = async () => {
+    console.log("STOPPING");
+    if (playing) {
+      console.log("Pausing all ...");
+      pauseAll();
+    }
+    recording.current = false;
+
+    await recorder.current.stopRecording();
+    const audioBlob = await recorder.current.getBlob();
+    const arrayBuffer = await audioBlob.arrayBuffer();
+    const trackName = prompt("Name your track");
+    const trackData = {
+      name: trackName,
+      buffer: arrayBuffer,
+    };
+
+    const newTrack = await createPlaybackTrack(
+      audioCtx,
+      masterTrack,
+      song,
+      trackData,
+      "buffer"
+    );
+
+    recorder.current.reset();
+
+    setTracks([...tracks, newTrack]);
   };
 
   const playBufferNode = (track, offset) => {
+    // Web audio API is optimized for this behavior
+    // Destroy original node
+    if (track.buffer) {
+      try {
+        track.buffer.disconnect(track.muteNode);
+        // If this is initial start, has to start before we can stop
+        // track.buffer.start();
+        track.buffer.stop();
+        track.buffer = null;
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
     const bufferSource = audioCtx.createBufferSource();
     bufferSource.buffer = track.decodedAudio;
     track.buffer = bufferSource;
@@ -217,17 +250,17 @@ const AudioContextProvider = ({ children }) => {
     }
   };
 
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.keyCode === 32) {
-        togglePlayAll();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [togglePlayAll]);
+  // useEffect(() => {
+  //   const handleKeyDown = (event) => {
+  //     if (event.keyCode === 32) {
+  //       togglePlayAll();
+  //     }
+  //   };
+  //   window.addEventListener("keydown", handleKeyDown);
+  //   return () => {
+  //     window.removeEventListener("keydown", handleKeyDown);
+  //   };
+  // }, [togglePlayAll]);
 
   // TODO: implement with buffer
   const rewind = () => {
@@ -336,6 +369,16 @@ const AudioContextProvider = ({ children }) => {
     }
   };
 
+  const toggleRecord = (record) => {
+    if (record) {
+      console.log("Should start ...");
+      recordStart();
+    } else {
+      console.log("Should stop ...");
+      recordStop();
+    }
+  };
+
   return (
     <AudioContext.Provider
       value={{
@@ -356,6 +399,8 @@ const AudioContextProvider = ({ children }) => {
         getCurrentTime,
         song: () => song,
         toggleDelay,
+        toggleRecord,
+        recording: () => recording.current,
       }}
     >
       {exportProgress ? (

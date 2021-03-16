@@ -1,5 +1,13 @@
 import lamejs from "lamejs";
 
+function forceDownload(blob, fileName) {
+  const url = (window.URL || window.webkitURL).createObjectURL(blob);
+  const link = window.document.createElement("a");
+  link.href = url;
+  link.download = fileName || "my mix.wav";
+  link.click();
+}
+
 function writeString(view, offset, string) {
   for (var i = 0; i < string.length; i++) {
     view.setUint8(offset + i, string.charCodeAt(i));
@@ -203,12 +211,23 @@ export function exportMP3(allBuffers) {
   forceDownload(blob, "test.mp3");
 }
 
-function forceDownload(blob, fileName) {
-  const url = (window.URL || window.webkitURL).createObjectURL(blob);
-  const link = window.document.createElement("a");
-  link.href = url;
-  link.download = fileName || "my mix.wav";
-  link.click();
+export function getAsyncInputStream() {
+  return new Promise((resolve, reject) => {
+    if (navigator.mediaDevices) {
+      navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then((stream) => {
+          resolve(stream);
+        })
+        .catch((e) => {
+          window.alert("The following gUM error occurred: " + e);
+        });
+    } else {
+      window.alert(
+        "Your browser does not support recording, try Google Chrome"
+      );
+    }
+  });
 }
 
 // export function exportWAV(

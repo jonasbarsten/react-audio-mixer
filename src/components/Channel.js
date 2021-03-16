@@ -31,15 +31,15 @@ const Channel = ({ track = {} }) => {
     setDelay(!delay);
   };
 
-  const toggleRecording = () => {
-    if (recording) {
-      audioContext.recordStop(track);
-      setRecording(false);
-    } else {
-      audioContext.recordStart(track);
-      setRecording(true);
-    }
-  };
+  // const toggleRecording = () => {
+  //   if (recording) {
+  //     audioContext.recordStop(track);
+  //     setRecording(false);
+  //   } else {
+  //     audioContext.recordStart(track);
+  //     setRecording(true);
+  //   }
+  // };
 
   const recordingClass = recording ? " recording" : " record";
 
@@ -72,9 +72,7 @@ const Channel = ({ track = {} }) => {
           meterValue={track.meterValue}
         />
         {track.type === "input" ? (
-          <p className={`label${recordingClass}`} onClick={toggleRecording}>
-            Record
-          </p>
+          <p className={`label${recordingClass}`}>Record</p>
         ) : (
           <p className="label">{track.name}</p>
         )}

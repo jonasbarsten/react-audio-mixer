@@ -1,11 +1,17 @@
 import { v4 as uuidv4 } from "uuid";
 import { createAsyncBufferSource } from "./audio";
 
-const createPlaybackTrack = async (audioCtx, masterNode, song, track) => {
+const createPlaybackTrack = async (
+  audioCtx,
+  masterNode,
+  song,
+  data,
+  type = "file"
+) => {
   let newTrack = {
     id: uuidv4(),
-    name: track.name,
-    fileName: track.fileName,
+    name: data.name,
+    // fileName: data.fileName,
     type: "playback",
     solo: false,
     mute: false,
@@ -13,14 +19,22 @@ const createPlaybackTrack = async (audioCtx, masterNode, song, track) => {
   };
 
   // Creating audio buffer source
-  const response = await fetch(`/sounds/${song}/${track.fileName}`);
-  const audioArrayBuffer = await response.arrayBuffer();
+  let audioArrayBuffer = null;
+  if (type === "file") {
+    const response = await fetch(`/sounds/${song}/${data.fileName}`);
+    audioArrayBuffer = await response.arrayBuffer();
+  }
+
+  if (type === "buffer") {
+    audioArrayBuffer = data.buffer;
+  }
+
   const decodedAudio = await createAsyncBufferSource(
     audioCtx,
     audioArrayBuffer
   );
-  const bufferSource = audioCtx.createBufferSource();
-  bufferSource.buffer = decodedAudio;
+  // const bufferSource = audioCtx.createBufferSource();
+  // bufferSource.buffer = decodedAudio;
 
   // Creating audio, gain, analyser and panner nodes
   const gainNode = audioCtx.createGain();
@@ -50,7 +64,7 @@ const createPlaybackTrack = async (audioCtx, masterNode, song, track) => {
   }
 
   newTrack.decodedAudio = decodedAudio;
-  newTrack.buffer = bufferSource;
+  newTrack.buffer = null; // Will be created on first play event
   newTrack.gainNode = gainNode;
   newTrack.muteNode = muteNode;
   newTrack.convolverNode = convolverNode;
@@ -62,8 +76,8 @@ const createPlaybackTrack = async (audioCtx, masterNode, song, track) => {
   // newTrack.meterValue = 0;
 
   // Connecting the nodes and connecting it to the master gain node
-  bufferSource
-    .connect(muteNode)
+  muteNode
+    // .connect(muteNode)
     .connect(gainNode)
     .connect(pannerNode)
     // .connect(convolverNode)

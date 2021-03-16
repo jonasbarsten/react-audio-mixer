@@ -8,9 +8,11 @@ import "./Controls.scss";
 
 const Controls = () => {
   const [currentTime, setCurrentTime] = useState(0);
+  const [recording, setRecording] = useState(false);
   const audioContext = useContext(AudioContext);
+
   const pausedClass = audioContext.playing() ? "" : "paused";
-  const recordingClass = audioContext.playing() ? "recording" : "";
+  const recordingClass = recording ? "recording" : "";
 
   useEffect(() => {
     if (!audioContext.playing()) {
@@ -23,6 +25,11 @@ const Controls = () => {
 
     return () => clearInterval(interval);
   }, [audioContext]);
+
+  const toggleRecord = () => {
+    audioContext.toggleRecord(!recording);
+    setRecording(!recording);
+  };
 
   return (
     <div id="controls">
@@ -46,7 +53,7 @@ const Controls = () => {
         ></button>
         <button
           className={`control-item record ${recordingClass}`}
-          onClick={() => console.log("Recording ...")}
+          onClick={toggleRecord}
         ></button>
         <button
           className="control-item ff"

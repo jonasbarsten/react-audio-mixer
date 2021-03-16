@@ -23,6 +23,7 @@ const createInputTrack = async (audioCtx, masterNode) => {
     type: "input",
     solo: false,
     mute: true,
+    delay: false,
   };
 
   const stream = await getAsyncInputStream();

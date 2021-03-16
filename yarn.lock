@@ -9734,6 +9734,11 @@
   dependencies:
     "picomatch" "^2.2.1"
 
+"recordrtc@^5.6.2":
+  "integrity" "sha512-1QNKKNtl7+KcwD1lyOgP3ZlbiJ1d0HtXnypUy7yq49xEERxk31PHvE9RCciDrulPCY7WJ+oz0R9hpNxgsIurGQ=="
+  "resolved" "https://registry.npmjs.org/recordrtc/-/recordrtc-5.6.2.tgz"
+  "version" "5.6.2"
+
 "recursive-readdir@2.2.2":
   "integrity" "sha512-nRCcW9Sj7NuZwa2XvH9co8NPeXUBhZP7CRKJtU+cS6PW9FpCIFoI5ib0NT1ZrbNuPoRy0ylyCaUL8Gih4LSyFg=="
   "resolved" "https://registry.npmjs.org/recursive-readdir/-/recursive-readdir-2.2.2.tgz"
@@ -11716,16 +11721,6 @@
   "version" "1.7.3"
   dependencies:
     "minimalistic-assert" "^1.0.0"
-
-"web-audio-peak-meter@^2.0.1":
-  "integrity" "sha512-6Y0Xc/c9KEzC+QhNRGjqcEUAatSC7ydXptk3iUYZQLppxLeWqGFpmySOVbAHjxqSkW5i5rNcRs7mi3nw2tFnHA=="
-  "resolved" "https://registry.npmjs.org/web-audio-peak-meter/-/web-audio-peak-meter-2.0.1.tgz"
-  "version" "2.0.1"
-
-"web-audio-recorder-js@^0.0.2":
-  "integrity" "sha512-FHSL303jCCqO3z66EEr+X7c7KYurdWBD/28pmXCA6lq3Uy+nSCWN83MR0qwmLsMY2SwPq6rVmnVfZhOI3eanwA=="
-  "resolved" "https://registry.npmjs.org/web-audio-recorder-js/-/web-audio-recorder-js-0.0.2.tgz"
-  "version" "0.0.2"
 
 "web-vitals@^1.1.1":
   "integrity" "sha512-jYOaqu01Ny1NvMwJ3dBJDUOJ2PGWknZWH4AUnvFOscvbdHMERIKT2TlgiAey5rVyfOePG7so2JcXXZdSnBvioQ=="
