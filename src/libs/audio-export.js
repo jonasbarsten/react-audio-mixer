@@ -147,7 +147,13 @@ export function downloadAudioBuffer(
   progress(null);
 }
 
-export function offlineRender(tracks, duration, progress, progressStage) {
+export function offlineRender(
+  tracks,
+  duration,
+  progress,
+  progressStage,
+  mixName
+) {
   // Offline rendering has its own context, so we have to rebuild all the nodes for that context
   const offlineCtx = new (window.OfflineAudioContext ||
     window.webkitOfflineAudioContext)(2, 44100 * duration, 44100);
@@ -209,7 +215,7 @@ export function offlineRender(tracks, duration, progress, progressStage) {
     // TODO: do this better ...
     setTimeout(() => {
       cancelAnimationFrame(progressId);
-      downloadAudioBuffer(e.renderedBuffer, progress);
+      downloadAudioBuffer(e.renderedBuffer, progress, `${mixName}.wav`);
     }, 1000);
   };
 }

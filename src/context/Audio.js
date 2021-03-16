@@ -127,15 +127,25 @@ const AudioContextProvider = ({ children }) => {
       allBuffers.push(track.buffer.buffer);
     });
 
-    const progress = (data) => {
-      setExportProgress(data);
-    };
+    const mixName = prompt("Name your mix");
 
-    const progressStage = (data) => {
-      setExportProgressStage(data);
-    };
+    console.log(mixName);
 
-    offlineRender(tracks, config.songs[song].duration, progress, progressStage);
+    // const progress = (data) => {
+    //   setExportProgress(data);
+    // };
+
+    // const progressStage = (data) => {
+    //   setExportProgressStage(data);
+    // };
+
+    offlineRender(
+      tracks,
+      config.songs[song].duration,
+      (data) => setExportProgress(data),
+      (data) => setExportProgressStage(data),
+      mixName
+    );
   };
 
   const recordStart = (track) => {
@@ -149,6 +159,7 @@ const AudioContextProvider = ({ children }) => {
     recording.current = false;
     track.recorder.stop();
 
+    // TODO: there has to be a better way ...
     setTimeout(async () => {
       const blob = new Blob(recordedChunks.current, {
         type: "audio/ogg; codecs=opus",
