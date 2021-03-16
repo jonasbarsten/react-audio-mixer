@@ -6,7 +6,8 @@ const createPlaybackTrack = async (
   masterNode,
   song,
   data,
-  type = "file"
+  type = "file",
+  initFaderDownArray = []
 ) => {
   let newTrack = {
     id: uuidv4(),
@@ -38,6 +39,12 @@ const createPlaybackTrack = async (
 
   // Creating audio, gain, analyser and panner nodes
   const gainNode = audioCtx.createGain();
+
+  // Set with queryparam: ?initFaderDown=drums,bass,keys
+  if (initFaderDownArray.includes(data.name)) {
+    gainNode.gain.value = 0;
+  }
+
   const muteNode = audioCtx.createGain();
   // const analyserNode = audioCtx.createAnalyser();
   // const bufferLength = analyserNode.fftSize;

@@ -35,8 +35,12 @@ const AudioContextProvider = ({ children }) => {
   const recording = useRef(false);
   const recorder = useRef(null);
 
+  // Query params
+  const [song] = useQueryParam("song", "phoenix");
+  const [initFaderDown] = useQueryParam("initFaderDown", null);
+  const initFaderDownArray = initFaderDown ? initFaderDown.split(",") : [];
+
   // State
-  const [song, setSong] = useQueryParam("song", "phoenix");
   const [masterTrack, setMasterTrack] = useState(null);
   const [tracks, setTracks] = useState(null);
   const [playing, setPlaying] = useState(false);
@@ -83,7 +87,9 @@ const AudioContextProvider = ({ children }) => {
         audioCtx,
         masterNode,
         song,
-        track
+        track,
+        "file",
+        initFaderDownArray
       );
       newTracks.push(newTrack);
     }

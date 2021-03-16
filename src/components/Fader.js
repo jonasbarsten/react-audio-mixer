@@ -8,7 +8,10 @@ import { scale } from "../utils";
 import "./Fader.scss";
 
 const Fader = ({ master, gainNode }) => {
-  const [position, setPosition] = useState(-171);
+  // Ugly hack to set fader all the way down if initial gain is 0
+  const [position, setPosition] = useState(
+    gainNode && gainNode.gain.value === 0 ? 20 : -171
+  );
   const audioContext = useContext(AudioContext);
 
   // TODO: do this in audio context to have more control
