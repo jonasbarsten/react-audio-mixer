@@ -6,6 +6,8 @@ import Vu from "./Vu";
 
 import { AudioContext } from "../context/Audio";
 
+import "./Mixer.scss";
+
 const Mixer = () => {
   const audioContext = useContext(AudioContext);
   const tracks = audioContext.getTracks();

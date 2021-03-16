@@ -1,9 +1,90 @@
 .channel {
-  .record {
-    color: red;
-    background: white;
-    &:hover {
-      cursor: pointer;
-    }
+  background: blueviolet;
+  border-radius: 3px;
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.35);
+  display: inline-block;
+  margin: 0 6px;
+  overflow: hidden;
+  padding: 6px 4px 32px 4px;
+  position: relative;
+  width: 55px;
+  .mute,
+  .solo {
+    float: left;
+    width: 50%;
+  }
+
+  .mute {
+    color: white;
+    background: red;
+    border-radius: 2px 0 0 2px;
+  }
+  .solo {
+    background: yellow;
+    border-radius: 0 2px 2px 0;
+  }
+  .afl {
+    color: white;
+    background: blue;
+    margin: 6px auto;
+    width: 53px;
+  }
+  .label {
+    color: white;
+    background: blueviolet;
+  }
+
+  .mute.active,
+  .solo.active,
+  .afl.active {
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.6), inset 0 0 5px rgba(0, 0, 0, 0.3);
+    color: #0cf;
+  }
+
+  .pan {
+    height: 30px;
+    margin: 12px 0 0;
+    position: relative;
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+  }
+
+  .panner {
+    background: -webkit-radial-gradient(
+      ellipse,
+      hsl(214, 8%, 87%) 0%,
+      hsl(214, 8%, 60%) 100%
+    );
+    background: -moz-radial-gradient(
+      ellipse,
+      hsl(214, 8%, 87%) 0%,
+      hsl(214, 8%, 60%) 100%
+    );
+    background: radial-gradient(
+      ellipse,
+      hsl(214, 8%, 87%) 0%,
+      hsl(214, 8%, 60%) 100%
+    );
+    border-radius: 50%;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.85);
+    cursor: pointer;
+    height: 28px;
+    left: 50%;
+    margin-left: -14px;
+    position: absolute;
+    top: 0px;
+    width: 28px;
+  }
+
+  .pan-indicator {
+    background: #15181b;
+    border-radius: 50%;
+    box-shadow: inset 0px 0px 2px rgba(0, 0, 0, 0.3);
+    height: 6px;
+    left: 50%;
+    margin-left: -3px;
+    position: absolute;
+    top: 3px;
+    width: 6px;
   }
 }

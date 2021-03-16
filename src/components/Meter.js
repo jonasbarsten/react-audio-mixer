@@ -3,6 +3,8 @@ import webAudioPeakMeter from "web-audio-peak-meter";
 
 import { AudioContext } from "../context/Audio";
 
+import "./Meter.scss";
+
 const Meter = ({ gainNode }) => {
   const audioContext = useContext(AudioContext);
   const meterRef = useRef(null);
@@ -15,12 +17,7 @@ const Meter = ({ gainNode }) => {
 
   return (
     <>
-      <div
-        ref={meterRef}
-        className="meter"
-        height="280"
-        style={{ width: "5em", height: "20em", marginLeft: "-45px" }}
-      ></div>
+      <div ref={meterRef} className="meter" height="280"></div>
     </>
   );
 };

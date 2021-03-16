@@ -3,6 +3,8 @@ import React from "react";
 import Fader from "./Fader";
 import Meter from "./Meter";
 
+import "./Track.scss";
+
 const Track = ({ master = false, gainNode }) => {
   return (
     <div className="track">
