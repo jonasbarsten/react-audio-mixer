@@ -8,36 +8,36 @@
           "name": "Bass"
         },
         {
-          "fileName": "blasere.mp3",
-          "name": "Blås"
-        },
-        {
-          "fileName": "bolger.mp3",
-          "name": "Bølger"
+          "fileName": "trommer.mp3",
+          "name": "Trommer"
         },
         {
           "fileName": "gitar og piano.mp3",
           "name": "gtr + pno"
         },
         {
-          "fileName": "sang.mp3",
-          "name": "Sang"
+          "fileName": "blasere.mp3",
+          "name": "Blås"
         },
         {
           "fileName": "stryk.mp3",
           "name": "Stryk"
         },
         {
-          "fileName": "trombone.mp3",
-          "name": "Trombone"
-        },
-        {
-          "fileName": "trommer.mp3",
-          "name": "Trommer"
+          "fileName": "sang.mp3",
+          "name": "Sang"
         },
         {
           "fileName": "tullelyder.mp3",
           "name": "Tull"
+        },
+        {
+          "fileName": "trombone.mp3",
+          "name": "Trombone"
+        },
+        {
+          "fileName": "bolger.mp3",
+          "name": "Bølger"
         }
       ]
     },
