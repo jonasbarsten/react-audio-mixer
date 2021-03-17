@@ -49,7 +49,7 @@ const Channel = ({ track = {} }) => {
           className={`btn afl ${delay ? "active" : ""}`}
           onClick={toggleDelay}
         >
-          DELAY
+          EKKO
         </button>
         <Panner pannerNode={track.pannerNode} etc={track.etc} />
         <Track gainNode={track.gainNode} meterValue={track.meterValue} />

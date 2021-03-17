@@ -4,14 +4,7 @@ Read this: https://dmitripavlutin.com/dont-overuse-react-usecallback/
 Solo = unique
 
 Max 3 opptaksspor
-Default fader nede: tull, bølger og trombone
 
-Mute = rød
-Solo = gul
-Delay = blå
-
-Mikser-bakgrunn = lyseblå / oransje
-Spor-navn = samme farge som mikser-bakgrunn
 Spolefunksjon, kanskje timeline under mikseren
 Pan på iPad ... Bytte ut med horisontal slider? Evt. ala Live
 
@@ -19,11 +12,15 @@ Pan på iPad ... Bytte ut med horisontal slider? Evt. ala Live
 
 Remember to turn off "do not disturb" aka vibrate mode ...
 On old devices meters will lag ...
-name on export
 
 # demo:
 
 https://d32p0rv4tdmjoq.cloudfront.net?song=phoenix
+
+# query params
+
+?song=phoenix
+?initFaderDown=triggers,keys
 
 # inspo
 
