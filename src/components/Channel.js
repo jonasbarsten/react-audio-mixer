@@ -52,6 +52,14 @@ const Channel = ({ track = {} }) => {
         >
           EKKO
         </button>
+        <hr style={{ margin: "0" }} />
+        <button
+          className={`btn delete`}
+          onClick={() => audioContext.deleteTrack(track)}
+        >
+          SLETT
+        </button>
+        <hr style={{ margin: "0" }} />
         {/* <Panner pannerNode={track.pannerNode} etc={track.etc} /> */}
         <PannerSlider pannerNode={track.pannerNode} etc={track.etc} />
         <Track gainNode={track.gainNode} meterValue={track.meterValue} />

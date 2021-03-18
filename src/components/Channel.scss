@@ -36,6 +36,13 @@
     background: blueviolet;
   }
 
+  .delete {
+    color: white;
+    background: red;
+    margin: 6px auto;
+    width: 53px;
+  }
+
   .mute.active,
   .solo.active,
   .afl.active {

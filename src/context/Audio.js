@@ -362,6 +362,20 @@ const AudioContextProvider = ({ children }) => {
     }
   };
 
+  const deleteTrack = (track) => {
+    stopTrack(track);
+
+    const tracksCopy = tracks.filter((item) => item.id !== track.id);
+    setTracks(tracksCopy);
+
+    // const tracksCopy = [...tracks];
+    // const index = tracksCopy.indexOf(track);
+    // console.log(index);
+    // if (index !== -1) {
+    //   tracksCopy.splice(index, 1);
+    // }
+  };
+
   return (
     <AudioContext.Provider
       value={{
@@ -382,6 +396,7 @@ const AudioContextProvider = ({ children }) => {
         toggleDelay,
         toggleRecord,
         isMasterTrackHidden: () => hideMasterTrack,
+        deleteTrack,
       }}
     >
       {exportProgress ? (
