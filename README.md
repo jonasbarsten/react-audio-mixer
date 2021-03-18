@@ -21,6 +21,7 @@ https://d32p0rv4tdmjoq.cloudfront.net?song=phoenix
 
 ?song=phoenix
 ?initFaderDown=triggers,keys
+?hideMasterTrack=true
 
 # inspo
 
