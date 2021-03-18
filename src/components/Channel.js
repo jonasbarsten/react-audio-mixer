@@ -3,6 +3,7 @@ import React, { useState, useContext } from "react";
 import { AudioContext } from "../context/Audio";
 
 import Panner from "./Panner";
+import PannerSlider from "./PannerSlider";
 import Track from "./Track";
 
 import "./Channel.scss";
@@ -51,7 +52,8 @@ const Channel = ({ track = {} }) => {
         >
           EKKO
         </button>
-        <Panner pannerNode={track.pannerNode} etc={track.etc} />
+        {/* <Panner pannerNode={track.pannerNode} etc={track.etc} /> */}
+        <PannerSlider pannerNode={track.pannerNode} etc={track.etc} />
         <Track gainNode={track.gainNode} meterValue={track.meterValue} />
         <p className="label">{track.name}</p>
       </div>

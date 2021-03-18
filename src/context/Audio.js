@@ -145,9 +145,7 @@ const AudioContextProvider = ({ children }) => {
   };
 
   const recordStop = async () => {
-    console.log("STOPPING");
     if (playing) {
-      console.log("Pausing all ...");
       pauseAll();
     }
     recording.current = false;
@@ -177,17 +175,8 @@ const AudioContextProvider = ({ children }) => {
   const playBufferNode = (track, offset) => {
     // Web audio API is optimized for this behavior
     // Destroy original node
-    if (track.buffer) {
-      try {
-        track.buffer.disconnect(track.muteNode);
-        // If this is initial start, has to start before we can stop
-        // track.buffer.start();
-        track.buffer.stop();
-        track.buffer = null;
-      } catch (e) {
-        console.log(e);
-      }
-    }
+
+    stopTrack(track);
 
     const bufferSource = audioCtx.createBufferSource();
     bufferSource.buffer = track.decodedAudio;
@@ -212,11 +201,25 @@ const AudioContextProvider = ({ children }) => {
     setPlaying(true);
   };
 
+  const stopTrack = (track) => {
+    if (track.buffer) {
+      try {
+        track.buffer.disconnect(track.muteNode);
+        // If this is initial start, has to start before we can stop
+        // track.buffer.start();
+        track.buffer.stop();
+        track.buffer = null;
+      } catch (e) {
+        console.log(e);
+      }
+    }
+  };
+
   const pauseAll = () => {
     const elapsed = audioCtx.currentTime - startedAt.current;
     tracks.forEach((track) => {
       if (track.type === "playback") {
-        track.buffer.stop();
+        stopTrack(track);
       }
     });
     pausedAt.current = elapsed;
@@ -277,7 +280,7 @@ const AudioContextProvider = ({ children }) => {
     startedAt.current = 0;
     tracks.forEach((track) => {
       if (track.type === "playback") {
-        track.buffer.stop(0);
+        stopTrack(track);
       }
     });
     if (playing) {

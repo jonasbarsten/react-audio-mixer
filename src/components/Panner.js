@@ -74,6 +74,8 @@ const Panner = (props) => {
     setPan(0);
   };
 
+  console.log(pan);
+
   return (
     <div className="pan">
       <div
