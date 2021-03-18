@@ -38,6 +38,7 @@ const AudioContextProvider = ({ children }) => {
   // Query params
   const [song] = useQueryParam("song", "phoenix");
   const [initFaderDown] = useQueryParam("initFaderDown", null);
+  const [hideMasterTrack] = useQueryParam("hideMasterTrack", false);
   const initFaderDownArray = initFaderDown ? initFaderDown.split(",") : [];
 
   // State
@@ -380,6 +381,7 @@ const AudioContextProvider = ({ children }) => {
         song: () => song,
         toggleDelay,
         toggleRecord,
+        isMasterTrackHidden: () => hideMasterTrack,
       }}
     >
       {exportProgress ? (

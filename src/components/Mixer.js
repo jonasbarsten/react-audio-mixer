@@ -12,6 +12,7 @@ const Mixer = () => {
   const audioContext = useContext(AudioContext);
   const tracks = audioContext.getTracks();
   const playing = audioContext.playing();
+  const hideMasterTrack = audioContext.isMasterTrackHidden();
   return (
     <div id="mixer">
       {tracks &&
@@ -25,10 +26,12 @@ const Mixer = () => {
         <Vu channel="right" master={true} playing={playing} />
       </div>
 
-      <div id="master">
-        <Track master={true} />
-        <p className="label">Master</p>
-      </div>
+      {!hideMasterTrack && (
+        <div id="master">
+          <Track master={true} />
+          <p className="label">Master</p>
+        </div>
+      )}
     </div>
   );
 };
