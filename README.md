@@ -6,7 +6,6 @@ Solo = unique
 Max 3 opptaksspor
 
 Spolefunksjon, kanskje timeline under mikseren
-Pan på iPad ... Bytte ut med horisontal slider? Evt. ala Live
 
 # iOS:
 

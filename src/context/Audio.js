@@ -18,12 +18,12 @@ import Loader from "../components/Loader";
 // Config
 import config from "../config.json";
 
-let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-if (!audioCtx.createGain) audioCtx.createGain = audioCtx.createGainNode;
-if (!audioCtx.createDelay) audioCtx.createDelay = audioCtx.createDelayNode;
-if (!audioCtx.createScriptProcessor)
-  audioCtx.createScriptProcessor = audioCtx.createJavaScriptNode;
+// if (!audioCtx.createGain) audioCtx.createGain = audioCtx.createGainNode;
+// if (!audioCtx.createDelay) audioCtx.createDelay = audioCtx.createDelayNode;
+// if (!audioCtx.createScriptProcessor)
+//   audioCtx.createScriptProcessor = audioCtx.createJavaScriptNode;
 
 export const AudioContext = React.createContext();
 
