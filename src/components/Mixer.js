@@ -21,17 +21,17 @@ const Mixer = () => {
           return <Channel key={track.id} track={track} />;
         })}
 
-      <div id="meters">
-        <Vu channel="left" master={true} playing={playing} />
-        <Vu channel="right" master={true} playing={playing} />
-      </div>
-
       {!hideMasterTrack && (
-        <div id="master">
+        <div className="master">
           <Track master={true} />
           <p className="label">Master</p>
         </div>
       )}
+
+      <div className="meters">
+        <Vu channel="left" master={true} playing={playing} />
+        <Vu channel="right" master={true} playing={playing} />
+      </div>
     </div>
   );
 };
