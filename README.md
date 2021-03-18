@@ -2,6 +2,7 @@ TODO:
 
 Read this: https://dmitripavlutin.com/dont-overuse-react-usecallback/
 Solo = unique
+Implement audioContext with https://github.com/chrisguttandin/standardized-audio-context, NB: doesn't support createScriptProcessor
 
 Max 3 opptaksspor
 
