@@ -12,7 +12,6 @@ const createPlaybackTrack = async (
   let newTrack = {
     id: uuidv4(),
     name: data.name,
-    // fileName: data.fileName,
     type: "playback",
     solo: false,
     mute: false,
@@ -34,8 +33,6 @@ const createPlaybackTrack = async (
     audioCtx,
     audioArrayBuffer
   );
-  // const bufferSource = audioCtx.createBufferSource();
-  // bufferSource.buffer = decodedAudio;
 
   // Creating audio, gain, analyser and panner nodes
   const gainNode = audioCtx.createGain();
@@ -46,9 +43,6 @@ const createPlaybackTrack = async (
   }
 
   const muteNode = audioCtx.createGain();
-  // const analyserNode = audioCtx.createAnalyser();
-  // const bufferLength = analyserNode.fftSize;
-  // const animationData = new Uint8Array(bufferLength);
   const convolverNode = audioCtx.createConvolver();
   const convolverResponse = await fetch("/sounds/effects/echo.wav");
   const convolverAudioArrayBuffer = await convolverResponse.arrayBuffer();
@@ -77,19 +71,10 @@ const createPlaybackTrack = async (
   newTrack.convolverNode = convolverNode;
   newTrack.pannerNode = pannerNode;
   newTrack.etc = { panValue: 0 };
-  // newTrack.analyserNode = analyserNode;
-  // newTrack.animationData = animationData;
-  // newTrack.meterData = [];
-  // newTrack.meterValue = 0;
 
   // Connecting the nodes and connecting it to the master gain node
-  muteNode
-    // .connect(muteNode)
-    .connect(gainNode)
-    .connect(pannerNode)
-    // .connect(convolverNode)
-    // .connect(analyserNode)
-    .connect(masterNode.gainNode);
+  // The buffer node will be connected to the mute node on first play event
+  muteNode.connect(gainNode).connect(pannerNode).connect(masterNode.gainNode);
 
   return newTrack;
 };
