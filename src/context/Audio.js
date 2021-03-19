@@ -172,7 +172,7 @@ const AudioContextProvider = ({ children }) => {
 
   const recordStart = () => {
     if (!microphone) {
-      captureMicrophone(microphone, isEdge, function (mic) {
+      captureMicrophone(isEdge, function (mic) {
         microphone = mic;
 
         if (isSafari) {

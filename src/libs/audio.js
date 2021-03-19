@@ -100,12 +100,7 @@ export function createAsyncBufferSource(audioCtx, arrayBuffer) {
   });
 }
 
-export function captureMicrophone(microphone, isEdge, callback) {
-  if (microphone) {
-    callback(microphone);
-    return;
-  }
-
+export function captureMicrophone(isEdge, callback) {
   if (
     typeof navigator.mediaDevices === "undefined" ||
     !navigator.mediaDevices.getUserMedia
