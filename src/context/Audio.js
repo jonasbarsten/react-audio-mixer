@@ -233,7 +233,7 @@ const AudioContextProvider = ({ children }) => {
     recording.current = true;
   };
 
-  const recordStop = () => {
+  const recordStop = async () => {
     if (playing) {
       pauseAll();
     }
@@ -242,27 +242,28 @@ const AudioContextProvider = ({ children }) => {
 
     recording.current = false;
 
-    recorder.stopRecording(async (blob) => {
-      const arrayBuffer = await blob.arrayBuffer();
-      const trackName = prompt("Name your track");
-      const trackData = {
-        name: trackName,
-        buffer: arrayBuffer,
-      };
+    await recorder.stopRecording();
+    const blob = await recorder.getBlob();
+    const arrayBuffer = await blob.arrayBuffer();
+    const trackName = prompt("Name your track");
+    const trackData = {
+      name: trackName,
+      buffer: arrayBuffer,
+    };
 
-      const newTrack = await createPlaybackTrack(
-        audioCtx,
-        masterTrack,
-        song,
-        trackData,
-        "buffer"
-      );
+    const newTrack = await createPlaybackTrack(
+      audioCtx,
+      masterTrack,
+      song,
+      trackData,
+      "buffer"
+    );
 
-      recorder = null;
+    recorder = null;
 
-      setTracks([...tracks, newTrack]);
-    });
-    // const blob = await recorder.getBlob();
+    setTracks([...tracks, newTrack]);
+
+    //
 
     // if (isSafari) {
     //   if (microphone) {
