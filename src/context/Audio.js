@@ -2,7 +2,7 @@
 // TODO: export could be done in parallel with mixing ...
 
 import React, { useState, useEffect, useRef } from "react";
-import { RecordRTCPromisesHandler } from "recordrtc";
+import { StereoAudioRecorder } from "recordrtc";
 
 // Hooks
 import useQueryParam from "../hooks/useQueryParams";
@@ -18,12 +18,31 @@ import Loader from "../components/Loader";
 // Config
 import config from "../config.json";
 
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let recorder = null;
 
-// if (!audioCtx.createGain) audioCtx.createGain = audioCtx.createGainNode;
-// if (!audioCtx.createDelay) audioCtx.createDelay = audioCtx.createDelayNode;
-// if (!audioCtx.createScriptProcessor)
-//   audioCtx.createScriptProcessor = audioCtx.createJavaScriptNode;
+// Support for blob.arrayBuffer() in iOS safari
+(function () {
+  File.prototype.arrayBuffer = File.prototype.arrayBuffer || myArrayBuffer;
+  Blob.prototype.arrayBuffer = Blob.prototype.arrayBuffer || myArrayBuffer;
+
+  function myArrayBuffer() {
+    // this: File or Blob
+    return new Promise((resolve) => {
+      let fr = new FileReader();
+      fr.onload = () => {
+        resolve(fr.result);
+      };
+      fr.readAsArrayBuffer(this);
+    });
+  }
+})();
+
+let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+if (!audioCtx.createGain) audioCtx.createGain = audioCtx.createGainNode;
+if (!audioCtx.createDelay) audioCtx.createDelay = audioCtx.createDelayNode;
+if (!audioCtx.createScriptProcessor)
+  audioCtx.createScriptProcessor = audioCtx.createJavaScriptNode;
 
 export const AudioContext = React.createContext();
 
@@ -33,7 +52,6 @@ const AudioContextProvider = ({ children }) => {
   const startedAt = useRef(0);
   const pausedAt = useRef(0);
   const recording = useRef(false);
-  const recorder = useRef(null);
 
   // Query params
   const [song] = useQueryParam("song", "phoenix");
@@ -50,7 +68,7 @@ const AudioContextProvider = ({ children }) => {
   const [exportProgress, setExportProgress] = useState(0);
   const [exportProgressStage, setExportProgressStage] = useState("");
 
-  // Use effect (except keydown)
+  // Use effects
   useEffect(() => {
     const onLoad = async () => {
       const masterNode = createMasterNode();
@@ -128,49 +146,47 @@ const AudioContextProvider = ({ children }) => {
       backToStart();
     }
 
-    let newRecorder = recorder.current;
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+    });
 
-    if (!newRecorder) {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-      });
-      newRecorder = new RecordRTCPromisesHandler(stream, {
-        type: "audio",
-      });
-    }
+    recorder = new StereoAudioRecorder(stream, {
+      sampleRate: 44100,
+      bufferSize: 4096,
+    });
 
-    newRecorder.startRecording();
+    recorder.record();
     playAll();
-    recorder.current = newRecorder;
     recording.current = true;
   };
 
-  const recordStop = async () => {
+  const recordStop = () => {
     if (playing) {
       pauseAll();
     }
+
     recording.current = false;
 
-    await recorder.current.stopRecording();
-    const audioBlob = await recorder.current.getBlob();
-    const arrayBuffer = await audioBlob.arrayBuffer();
-    const trackName = prompt("Name your track");
-    const trackData = {
-      name: trackName,
-      buffer: arrayBuffer,
-    };
+    recorder.stop(async function (blob) {
+      const arrayBuffer = await blob.arrayBuffer();
+      const trackName = prompt("Name your track");
+      const trackData = {
+        name: trackName,
+        buffer: arrayBuffer,
+      };
 
-    const newTrack = await createPlaybackTrack(
-      audioCtx,
-      masterTrack,
-      song,
-      trackData,
-      "buffer"
-    );
+      const newTrack = await createPlaybackTrack(
+        audioCtx,
+        masterTrack,
+        song,
+        trackData,
+        "buffer"
+      );
 
-    recorder.current.reset();
+      recorder = null;
 
-    setTracks([...tracks, newTrack]);
+      setTracks([...tracks, newTrack]);
+    });
   };
 
   const playBufferNode = (track, offset) => {
@@ -181,9 +197,10 @@ const AudioContextProvider = ({ children }) => {
 
     const bufferSource = audioCtx.createBufferSource();
     bufferSource.buffer = track.decodedAudio;
+    bufferSource.connect(track.muteNode);
+    bufferSource.start(0, offset);
+
     track.buffer = bufferSource;
-    track.buffer.connect(track.muteNode);
-    track.buffer.start(0, offset);
   };
 
   const playAll = () => {
@@ -193,9 +210,7 @@ const AudioContextProvider = ({ children }) => {
     const offset = pausedAt.current;
 
     tracks.forEach((track) => {
-      if (track.type === "playback") {
-        playBufferNode(track, offset);
-      }
+      playBufferNode(track, offset);
     });
     startedAt.current = audioCtx.currentTime - offset;
     pausedAt.current = 0;
@@ -206,8 +221,6 @@ const AudioContextProvider = ({ children }) => {
     if (track.buffer) {
       try {
         track.buffer.disconnect(track.muteNode);
-        // If this is initial start, has to start before we can stop
-        // track.buffer.start();
         track.buffer.stop();
         track.buffer = null;
       } catch (e) {
@@ -219,9 +232,7 @@ const AudioContextProvider = ({ children }) => {
   const pauseAll = () => {
     const elapsed = audioCtx.currentTime - startedAt.current;
     tracks.forEach((track) => {
-      if (track.type === "playback") {
-        stopTrack(track);
-      }
+      stopTrack(track);
     });
     pausedAt.current = elapsed;
     setPlaying(false);
@@ -280,9 +291,7 @@ const AudioContextProvider = ({ children }) => {
     pausedAt.current = 0;
     startedAt.current = 0;
     tracks.forEach((track) => {
-      if (track.type === "playback") {
-        stopTrack(track);
-      }
+      stopTrack(track);
     });
     if (playing) {
       playAll();
@@ -318,7 +327,6 @@ const AudioContextProvider = ({ children }) => {
   };
 
   const toggleMute = (id, mute) => {
-    // TODO: do this more efficently
     tracks.forEach((track) => {
       if (track.id === id) {
         if (mute) {
@@ -364,16 +372,8 @@ const AudioContextProvider = ({ children }) => {
 
   const deleteTrack = (track) => {
     stopTrack(track);
-
     const tracksCopy = tracks.filter((item) => item.id !== track.id);
     setTracks(tracksCopy);
-
-    // const tracksCopy = [...tracks];
-    // const index = tracksCopy.indexOf(track);
-    // console.log(index);
-    // if (index !== -1) {
-    //   tracksCopy.splice(index, 1);
-    // }
   };
 
   return (
