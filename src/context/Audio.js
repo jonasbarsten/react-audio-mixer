@@ -202,7 +202,7 @@ const AudioContextProvider = ({ children }) => {
       navigator.platform &&
       navigator.platform.toString().toLowerCase().indexOf("win") === -1
     ) {
-      options.sampleRate = 48000; // or 44100 or remove this line for default
+      options.sampleRate = 48000;
     }
 
     if (isSafari) {
@@ -219,7 +219,6 @@ const AudioContextProvider = ({ children }) => {
     }
 
     recorder = new RecordRTCPromisesHandler(microphone, options);
-    console.log(recorder);
 
     if (playing) {
       pauseAll();
@@ -228,6 +227,7 @@ const AudioContextProvider = ({ children }) => {
     if (pausedAt.current !== 0 || startedAt.current !== 0) {
       backToStart();
     }
+
     recorder.startRecording();
     playAll();
     recording.current = true;
@@ -241,8 +241,7 @@ const AudioContextProvider = ({ children }) => {
     recording.current = false;
 
     await recorder.stopRecording();
-    let blob = await recorder.getBlob();
-
+    const blob = await recorder.getBlob();
     const arrayBuffer = await blob.arrayBuffer();
     const trackName = prompt("Name your track");
     const trackData = {
@@ -264,8 +263,8 @@ const AudioContextProvider = ({ children }) => {
 
     if (isSafari) {
       if (microphone) {
-        // microphone.getTracks().forEach((track) => track.stop());
-        microphone.stop();
+        microphone.getTracks().forEach((track) => track.stop());
+        // microphone.stop();
         microphone = null;
       }
     }
@@ -313,6 +312,9 @@ const AudioContextProvider = ({ children }) => {
   };
 
   const pauseAll = () => {
+    if (recording.current) {
+      recordStop();
+    }
     const elapsed = audioCtx.currentTime - startedAt.current;
     tracks.forEach((track) => {
       stopTrack(track);
