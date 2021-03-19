@@ -206,7 +206,7 @@ const AudioContextProvider = ({ children }) => {
 
     if (isSafari) {
       options.sampleRate = 44100;
-      options.bufferSize = 4096;
+      // options.bufferSize = 4096;
       options.numberOfAudioChannels = 2;
     }
 
