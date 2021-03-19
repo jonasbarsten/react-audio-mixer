@@ -170,7 +170,7 @@ const AudioContextProvider = ({ children }) => {
   //   stream = newStream;
   // };
 
-  const recordStart = () => {
+  const recordStart = async () => {
     if (!microphone) {
       captureMicrophone(microphone, isEdge, function (mic) {
         microphone = mic;
@@ -212,11 +212,15 @@ const AudioContextProvider = ({ children }) => {
     }
 
     if (recorder) {
-      recorder.destroy();
+      recorder.stream.getTracks((t) => t.stop());
+      await recorder.reset();
+      await recorder.destroy();
       recorder = null;
     }
 
     recorder = new RecordRTCPromisesHandler(microphone, options);
+    console.log(recorder);
+
     if (playing) {
       pauseAll();
     }
@@ -239,9 +243,6 @@ const AudioContextProvider = ({ children }) => {
     await recorder.stopRecording();
     let blob = await recorder.getBlob();
 
-    // stream.getTracks().forEach((track) => track.stop());
-
-    // recorder.stop(async function (blob) {
     const arrayBuffer = await blob.arrayBuffer();
     const trackName = prompt("Name your track");
     const trackData = {
@@ -260,6 +261,7 @@ const AudioContextProvider = ({ children }) => {
     recorder = null;
 
     setTracks([...tracks, newTrack]);
+
     if (isSafari) {
       if (microphone) {
         // microphone.getTracks().forEach((track) => track.stop());
@@ -462,6 +464,7 @@ const AudioContextProvider = ({ children }) => {
       value={{
         togglePlayAll,
         playing: () => playing,
+        recording: () => recording.current,
         getTracks: () => tracks,
         getMasterTrack: () => masterTrack,
         setMasterGain,

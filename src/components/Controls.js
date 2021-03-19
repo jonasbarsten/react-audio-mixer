@@ -8,8 +8,8 @@ import "./Controls.scss";
 
 const Controls = () => {
   const [currentTime, setCurrentTime] = useState(0);
-  const [recording, setRecording] = useState(false);
   const audioContext = useContext(AudioContext);
+  const recording = audioContext.recording();
 
   const pausedClass = audioContext.playing() ? "" : "paused";
   const recordingClass = recording ? "recording" : "";
@@ -28,7 +28,6 @@ const Controls = () => {
 
   const toggleRecord = () => {
     audioContext.toggleRecord(!recording);
-    setRecording(!recording);
   };
 
   return (
