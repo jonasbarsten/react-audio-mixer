@@ -2,7 +2,7 @@
 // TODO: export could be done in parallel with mixing ...
 
 import React, { useState, useEffect, useRef } from "react";
-import { StereoAudioRecorder } from "recordrtc";
+import { RecordRTCPromisesHandler, StereoAudioRecorder } from "recordrtc";
 
 // Hooks
 import useQueryParam from "../hooks/useQueryParams";
@@ -11,6 +11,7 @@ import useQueryParam from "../hooks/useQueryParams";
 import createMasterTrack from "../libs/createMasterTrack";
 import createPlaybackTrack from "../libs/createPlaybackTrack";
 import { offlineRender } from "../libs/audio-export";
+import { captureMicrophone } from "../libs/audio";
 
 // Components
 import Loader from "../components/Loader";
@@ -18,7 +19,14 @@ import Loader from "../components/Loader";
 // Config
 import config from "../config.json";
 
-let recorder = null;
+// Recorder stuff
+const isEdge =
+  navigator.userAgent.indexOf("Edge") !== -1 &&
+  (!!navigator.msSaveOrOpenBlob || !!navigator.msSaveBlob);
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+let recorder; // globally accessible
+let microphone;
 
 // Support for blob.arrayBuffer() in iOS safari
 (function () {
@@ -52,6 +60,7 @@ const AudioContextProvider = ({ children }) => {
   const startedAt = useRef(0);
   const pausedAt = useRef(0);
   const recording = useRef(false);
+  // const stream = useRef(null);
 
   // Query params
   const [song] = useQueryParam("song", "phoenix");
@@ -137,7 +146,77 @@ const AudioContextProvider = ({ children }) => {
     );
   };
 
-  const recordStart = async () => {
+  // const recordStart = async () => {
+  //   if (playing) {
+  //     pauseAll();
+  //   }
+
+  //   if (pausedAt.current !== 0 || startedAt.current !== 0) {
+  //     backToStart();
+  //   }
+
+  //   const newStream = await navigator.mediaDevices.getUserMedia({
+  //     audio: true,
+  //   });
+
+  //   recorder = new StereoAudioRecorder(newStream, {
+  //     sampleRate: 44100,
+  //     bufferSize: 4096,
+  //   });
+
+  //   recorder.record();
+  //   playAll();
+  //   recording.current = true;
+  //   stream = newStream;
+  // };
+
+  const recordStart = () => {
+    if (!microphone) {
+      captureMicrophone(microphone, isEdge, function (mic) {
+        microphone = mic;
+
+        if (isSafari) {
+          alert(
+            "Please click startRecording button again. First time we tried to access your microphone. Now we will record it."
+          );
+          return;
+        }
+
+        recordStart();
+      });
+      return;
+    }
+
+    let options = {
+      type: "audio",
+      numberOfAudioChannels: isEdge ? 1 : 2,
+      checkForInactiveTracks: true,
+      bufferSize: 16384,
+    };
+
+    if (isSafari || isEdge) {
+      options.recorderType = StereoAudioRecorder;
+    }
+
+    if (
+      navigator.platform &&
+      navigator.platform.toString().toLowerCase().indexOf("win") === -1
+    ) {
+      options.sampleRate = 48000; // or 44100 or remove this line for default
+    }
+
+    if (isSafari) {
+      options.sampleRate = 44100;
+      options.bufferSize = 4096;
+      options.numberOfAudioChannels = 2;
+    }
+
+    if (recorder) {
+      recorder.destroy();
+      recorder = null;
+    }
+
+    recorder = new RecordRTCPromisesHandler(microphone, options);
     if (playing) {
       pauseAll();
     }
@@ -145,48 +224,50 @@ const AudioContextProvider = ({ children }) => {
     if (pausedAt.current !== 0 || startedAt.current !== 0) {
       backToStart();
     }
-
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-    });
-
-    recorder = new StereoAudioRecorder(stream, {
-      sampleRate: 44100,
-      bufferSize: 4096,
-    });
-
-    recorder.record();
+    recorder.startRecording();
     playAll();
     recording.current = true;
   };
 
-  const recordStop = () => {
+  const recordStop = async () => {
     if (playing) {
       pauseAll();
     }
 
     recording.current = false;
 
-    recorder.stop(async function (blob) {
-      const arrayBuffer = await blob.arrayBuffer();
-      const trackName = prompt("Name your track");
-      const trackData = {
-        name: trackName,
-        buffer: arrayBuffer,
-      };
+    await recorder.stopRecording();
+    let blob = await recorder.getBlob();
 
-      const newTrack = await createPlaybackTrack(
-        audioCtx,
-        masterTrack,
-        song,
-        trackData,
-        "buffer"
-      );
+    // stream.getTracks().forEach((track) => track.stop());
 
-      recorder = null;
+    // recorder.stop(async function (blob) {
+    const arrayBuffer = await blob.arrayBuffer();
+    const trackName = prompt("Name your track");
+    const trackData = {
+      name: trackName,
+      buffer: arrayBuffer,
+    };
 
-      setTracks([...tracks, newTrack]);
-    });
+    const newTrack = await createPlaybackTrack(
+      audioCtx,
+      masterTrack,
+      song,
+      trackData,
+      "buffer"
+    );
+
+    recorder = null;
+
+    setTracks([...tracks, newTrack]);
+    if (isSafari) {
+      if (microphone) {
+        // microphone.getTracks().forEach((track) => track.stop());
+        microphone.stop();
+        microphone = null;
+      }
+    }
+    // });
   };
 
   const playBufferNode = (track, offset) => {

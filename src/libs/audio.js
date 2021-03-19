@@ -100,6 +100,40 @@ export function createAsyncBufferSource(audioCtx, arrayBuffer) {
   });
 }
 
+export function captureMicrophone(microphone, isEdge, callback) {
+  if (microphone) {
+    callback(microphone);
+    return;
+  }
+
+  if (
+    typeof navigator.mediaDevices === "undefined" ||
+    !navigator.mediaDevices.getUserMedia
+  ) {
+    alert("This browser does not supports WebRTC getUserMedia API.");
+
+    if (!!navigator.getUserMedia) {
+      alert("This browser seems supporting deprecated getUserMedia API.");
+    }
+  }
+
+  navigator.mediaDevices
+    .getUserMedia({
+      audio: isEdge
+        ? true
+        : {
+            echoCancellation: false,
+          },
+    })
+    .then(function (mic) {
+      callback(mic);
+    })
+    .catch(function (error) {
+      alert("Unable to capture your microphone. Please check console logs.");
+      console.error(error);
+    });
+}
+
 // export function offsetBuffer(audioCtx, recordingBuffer, before, after) {
 //   console.log("player.offsetBuffer", recordingBuffer, before, after);
 //   var i = 0,
