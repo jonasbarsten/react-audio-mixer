@@ -233,42 +233,44 @@ const AudioContextProvider = ({ children }) => {
     recording.current = true;
   };
 
-  const recordStop = async () => {
+  const recordStop = () => {
     if (playing) {
       pauseAll();
     }
 
+    console.log("STOPPING");
+
     recording.current = false;
 
-    await recorder.stopRecording();
-    const blob = await recorder.getBlob();
-    const arrayBuffer = await blob.arrayBuffer();
-    const trackName = prompt("Name your track");
-    const trackData = {
-      name: trackName,
-      buffer: arrayBuffer,
-    };
+    recorder.stopRecording(async (blob) => {
+      const arrayBuffer = await blob.arrayBuffer();
+      const trackName = prompt("Name your track");
+      const trackData = {
+        name: trackName,
+        buffer: arrayBuffer,
+      };
 
-    const newTrack = await createPlaybackTrack(
-      audioCtx,
-      masterTrack,
-      song,
-      trackData,
-      "buffer"
-    );
+      const newTrack = await createPlaybackTrack(
+        audioCtx,
+        masterTrack,
+        song,
+        trackData,
+        "buffer"
+      );
 
-    recorder = null;
+      recorder = null;
 
-    setTracks([...tracks, newTrack]);
+      setTracks([...tracks, newTrack]);
+    });
+    // const blob = await recorder.getBlob();
 
-    if (isSafari) {
-      if (microphone) {
-        microphone.getTracks().forEach((track) => track.stop());
-        // microphone.stop();
-        microphone = null;
-      }
-    }
-    // });
+    // if (isSafari) {
+    //   if (microphone) {
+    //     microphone.getTracks().forEach((track) => track.stop());
+    //     // microphone.stop();
+    //     microphone = null;
+    //   }
+    // }
   };
 
   const playBufferNode = (track, offset) => {
@@ -312,9 +314,9 @@ const AudioContextProvider = ({ children }) => {
   };
 
   const pauseAll = () => {
-    if (recording.current) {
-      recordStop();
-    }
+    // if (recording.current) {
+    //   recordStop();
+    // }
     const elapsed = audioCtx.currentTime - startedAt.current;
     tracks.forEach((track) => {
       stopTrack(track);
