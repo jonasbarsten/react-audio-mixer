@@ -24,8 +24,7 @@ const isEdge =
   navigator.userAgent.indexOf("Edge") !== -1 &&
   (!!navigator.msSaveOrOpenBlob || !!navigator.msSaveBlob);
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
-let recorder; // globally accessible
+let recorder;
 let microphone;
 
 // Support for blob.arrayBuffer() in iOS safari
@@ -240,8 +239,6 @@ const AudioContextProvider = ({ children }) => {
       pauseAll();
     }
 
-    console.log("STOPPING");
-
     recording.current = false;
 
     await recorder.stopRecording();
@@ -265,24 +262,26 @@ const AudioContextProvider = ({ children }) => {
 
     setTracks([...tracks, newTrack]);
 
-    if (recorder) {
-      if (recorder.stream) {
-        recorder.stream.getTracks((t) => t.stop());
-      }
-      await recorder.reset();
-      await recorder.destroy();
-      recorder = null;
-    }
+    // if (recorder) {
+    //   if (recorder.stream) {
+    //     recorder.stream.getTracks((t) => t.stop());
+    //   }
+    //   await recorder.reset();
+    //   await recorder.destroy();
+    //   recorder = null;
+    // }
+
+    backToStart("stop");
 
     //
 
-    if (isSafari) {
-      if (microphone) {
-        // microphone.getTracks().forEach((track) => track.stop());
-        microphone.stop();
-        microphone = null;
-      }
-    }
+    // if (isSafari) {
+    //   if (microphone) {
+    //     // microphone.getTracks().forEach((track) => track.stop());
+    //     microphone.stop();
+    //     microphone = null;
+    //   }
+    // }
   };
 
   const playBufferNode = (track, offset) => {
@@ -302,7 +301,8 @@ const AudioContextProvider = ({ children }) => {
   };
 
   const playAll = () => {
-    if (audioCtx.state === "suspended") {
+    console.log(audioCtx);
+    if (audioCtx.state === "suspended" || audioCtx.state === "interrupted") {
       audioCtx.resume();
     }
     const offset = pausedAt.current;
@@ -328,9 +328,6 @@ const AudioContextProvider = ({ children }) => {
   };
 
   const pauseAll = () => {
-    // if (recording.current) {
-    //   recordStop();
-    // }
     const elapsed = audioCtx.currentTime - startedAt.current;
     tracks.forEach((track) => {
       stopTrack(track);
@@ -388,8 +385,8 @@ const AudioContextProvider = ({ children }) => {
     currentTime.current = newTime;
   };
 
-  const backToStart = () => {
-    if (audioCtx.state === "suspended") {
+  const backToStart = (cmd) => {
+    if (audioCtx.state === "suspended" || audioCtx.state === "interrupted") {
       audioCtx.resume();
     }
     pausedAt.current = 0;
@@ -397,7 +394,7 @@ const AudioContextProvider = ({ children }) => {
     tracks.forEach((track) => {
       stopTrack(track);
     });
-    if (playing) {
+    if (playing && cmd !== "stop") {
       playAll();
     }
   };

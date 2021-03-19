@@ -42,10 +42,10 @@ const Controls = () => {
             setCurrentTime(0);
           }}
         ></button>
-        <button
+        {/* <button
           className="control-item rw"
           onClick={() => audioContext.rewind()}
-        ></button>
+        ></button> */}
         <button
           className={`control-item play ${pausedClass}`}
           onClick={() => audioContext.togglePlayAll()}
@@ -54,10 +54,10 @@ const Controls = () => {
           className={`control-item record ${recordingClass}`}
           onClick={toggleRecord}
         ></button>
-        <button
+        {/* <button
           className="control-item ff"
           onClick={() => audioContext.forward()}
-        ></button>
+        ></button> */}
         <button
           className="control-item save"
           onClick={() => audioContext.exportAudio()}
