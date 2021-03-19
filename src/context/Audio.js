@@ -170,14 +170,14 @@ const AudioContextProvider = ({ children }) => {
   //   stream = newStream;
   // };
 
-  const recordStart = async () => {
+  const recordStart = () => {
     if (!microphone) {
       captureMicrophone(microphone, isEdge, function (mic) {
         microphone = mic;
 
         if (isSafari) {
           alert(
-            "Please click startRecording button again. First time we tried to access your microphone. Now we will record it."
+            "Please click record button again. First time we tried to access your microphone. Now we will record it."
           );
           return;
         }
@@ -212,17 +212,19 @@ const AudioContextProvider = ({ children }) => {
     }
 
     if (recorder) {
-      recorder.stream.getTracks((t) => t.stop());
-      await recorder.reset();
-      await recorder.destroy();
+      if (recorder.stream) {
+        recorder.stream.getTracks((t) => t.stop());
+      }
+      // await recorder.reset();
+      // await recorder.destroy();
       recorder = null;
     }
 
     recorder = new RecordRTCPromisesHandler(microphone, options);
 
-    if (playing) {
-      pauseAll();
-    }
+    // if (playing) {
+    //   pauseAll();
+    // }
 
     if (pausedAt.current !== 0 || startedAt.current !== 0) {
       backToStart();
@@ -259,31 +261,42 @@ const AudioContextProvider = ({ children }) => {
       "buffer"
     );
 
-    recorder = null;
+    // recorder = null;
 
     setTracks([...tracks, newTrack]);
 
+    if (recorder) {
+      if (recorder.stream) {
+        recorder.stream.getTracks((t) => t.stop());
+      }
+      await recorder.reset();
+      await recorder.destroy();
+      recorder = null;
+    }
+
     //
 
-    // if (isSafari) {
-    //   if (microphone) {
-    //     microphone.getTracks().forEach((track) => track.stop());
-    //     // microphone.stop();
-    //     microphone = null;
-    //   }
-    // }
+    if (isSafari) {
+      if (microphone) {
+        // microphone.getTracks().forEach((track) => track.stop());
+        microphone.stop();
+        microphone = null;
+      }
+    }
   };
 
   const playBufferNode = (track, offset) => {
     // Web audio API is optimized for this behavior
     // Destroy original node
 
+    const newOffset = offset < 0 ? 0 : offset;
+
     stopTrack(track);
 
     const bufferSource = audioCtx.createBufferSource();
     bufferSource.buffer = track.decodedAudio;
     bufferSource.connect(track.muteNode);
-    bufferSource.start(0, offset);
+    bufferSource.start(0, newOffset);
 
     track.buffer = bufferSource;
   };
@@ -376,6 +389,9 @@ const AudioContextProvider = ({ children }) => {
   };
 
   const backToStart = () => {
+    if (audioCtx.state === "suspended") {
+      audioCtx.resume();
+    }
     pausedAt.current = 0;
     startedAt.current = 0;
     tracks.forEach((track) => {
