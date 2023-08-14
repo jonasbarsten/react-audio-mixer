@@ -41,6 +41,47 @@
         }
       ]
     },
+    "stokkmaurEng": {
+      "duration": 224,
+      "tracks": [
+        {
+          "fileName": "bass.mp3",
+          "name": "Bass"
+        },
+        {
+          "fileName": "trommer.mp3",
+          "name": "Drums"
+        },
+        {
+          "fileName": "gitar og piano.mp3",
+          "name": "gtr + pno"
+        },
+        {
+          "fileName": "blasere.mp3",
+          "name": "Horns"
+        },
+        {
+          "fileName": "stryk.mp3",
+          "name": "Strings"
+        },
+        {
+          "fileName": "song.mp3",
+          "name": "Song"
+        },
+        {
+          "fileName": "tullelyder.mp3",
+          "name": "Funny"
+        },
+        {
+          "fileName": "trombone.mp3",
+          "name": "Trombone"
+        },
+        {
+          "fileName": "bolger.mp3",
+          "name": "Waves"
+        }
+      ]
+    },
     "phoenix": {
       "duration": 211,
       "tracks": [

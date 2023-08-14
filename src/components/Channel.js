@@ -2,9 +2,12 @@ import React, { useState, useContext } from "react";
 
 import { AudioContext } from "../context/Audio";
 
-import Panner from "./Panner";
+// import Panner from "./Panner";
 import PannerSlider from "./PannerSlider";
 import Track from "./Track";
+
+// Hooks
+import useQueryParam from "../hooks/useQueryParams";
 
 import "./Channel.scss";
 
@@ -13,6 +16,8 @@ const Channel = ({ track = {} }) => {
   const [mute, setMute] = useState(track.mute);
   const [solo, setSolo] = useState(track.solo);
   const [delay, setDelay] = useState(track.delay);
+
+  const [lang] = useQueryParam("lang", "no");
 
   const style = track.type === "input" ? { backgroundColor: "white" } : {};
 
@@ -50,14 +55,14 @@ const Channel = ({ track = {} }) => {
           className={`btn afl ${delay ? "active" : ""}`}
           onClick={toggleDelay}
         >
-          EKKO
+          {lang === "no" ? "EKKO" : "ECHO"}
         </button>
         <hr style={{ margin: "0" }} />
         <button
           className={`btn delete`}
           onClick={() => audioContext.deleteTrack(track)}
         >
-          SLETT
+          {lang === "no" ? "SLETT" : "DELETE"}
         </button>
         <hr style={{ margin: "0" }} />
         {/* <Panner pannerNode={track.pannerNode} etc={track.etc} /> */}
