@@ -1,17 +1,7 @@
-TODO:
-
-Read this: https://dmitripavlutin.com/dont-overuse-react-usecallback/
-Solo = unique
-Implement audioContext with https://github.com/chrisguttandin/standardized-audio-context, NB: doesn't support createScriptProcessor
-
-Max 3 opptaksspor
-
-Spolefunksjon, kanskje timeline under mikseren
-
 # adding new songs:
 
-1 - Add tracks etc to config.json
-2 - Add folder with same name as song to /public/sounds/{songName} with mp3 files
+- Add tracks etc to config.json
+- Add folder with same name as song to /public/sounds/{songName} with mp3 files
 
 # iOS:
 
