@@ -8,6 +8,11 @@ Max 3 opptaksspor
 
 Spolefunksjon, kanskje timeline under mikseren
 
+# adding new songs:
+
+1 - Add tracks etc to config.json
+2 - Add folder with same name as song to /public/sounds/{songName} with mp3 files
+
 # iOS:
 
 Remember to turn off "do not disturb" aka vibrate mode ...
