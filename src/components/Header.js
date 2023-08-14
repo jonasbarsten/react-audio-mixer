@@ -4,8 +4,16 @@ import { AudioContext } from "../context/Audio";
 const Header = () => {
   const audioContext = useContext(AudioContext);
   const song = audioContext.song();
-  const songName = song === "stokkmaur" ? "stakkars stokkmaur" : song;
 
+  let songName = song;
+
+  if (song === "stokkmaur") {
+    songName = "stakkars stokkmaur";
+  }
+
+  if (song === "stokkmaurEng") {
+    songName = "poor cane ant";
+  }
   return (
     <header>
       <h1>{songName.toUpperCase()}</h1>
