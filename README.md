@@ -24,9 +24,10 @@ https://d32p0rv4tdmjoq.cloudfront.net?song=phoenix
 
 # query params
 
-?song=phoenix
-?initFaderDown=triggers,keys
-?hideMasterTrack=true
+- ?song=phoenix
+- ?initFaderDown=triggers,keys
+- ?hideMasterTrack=true
+- ?lang={"no" | "en"}
 
 # inspo
 
