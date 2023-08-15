@@ -12,7 +12,7 @@ const Header = () => {
   }
 
   if (song === "stokkmaurEng") {
-    songName = "poor cane ant";
+    songName = "poor carpenter ant";
   }
   return (
     <header>
